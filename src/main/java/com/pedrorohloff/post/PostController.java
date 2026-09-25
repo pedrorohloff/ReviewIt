@@ -24,10 +24,8 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Post> findById(@PathVariable("id") @Valid UUID id) {
-        return postService.findById(id)
-                .map(recordFound -> ResponseEntity.ok().body(recordFound))
-                .orElse(ResponseEntity.notFound().build());
+    public Post findById(@PathVariable("id") @Valid UUID id) {
+        return postService.findById(id);
     }
 
     @PostMapping
@@ -37,17 +35,13 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> update(@PathVariable("id") @Valid @NotNull UUID id, @Valid @RequestBody Post post) {
-        return postService.update(id, post)
-                .map(recordFound -> ResponseEntity.ok().body(recordFound))
-                .orElse(ResponseEntity.notFound().build());
+    public Post update(@PathVariable("id") @Valid @NotNull UUID id, @Valid @RequestBody Post post) {
+        return postService.update(id, post);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") @Valid @NotNull UUID id) {
-        if (postService.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable("id") @Valid @NotNull UUID id) {
+        postService.delete(id);
     }
 }

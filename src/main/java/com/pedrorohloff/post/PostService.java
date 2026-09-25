@@ -1,5 +1,6 @@
 package com.pedrorohloff.post;
 
+import com.pedrorohloff.exception.RecordNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
@@ -22,32 +23,31 @@ public class PostService {
         return postRepository.findAll();
     }
 
-    public Optional<Post> findById(@NotNull UUID id) {
-        return postRepository.findById(id);
+    public Post findById(@NotNull UUID id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException(id));
     }
 
     public Post create(@Valid Post post) {
         return postRepository.save(post);
     }
 
-    public Optional<Post> update(@NotNull UUID id, @Valid Post post) {
+    public Post update(@NotNull UUID id, @Valid Post post) {
         return postRepository.findById(id)
                 .map(recordFound -> {
                     recordFound.setContent(post.getContent());
                     recordFound.setTitle(post.getTitle());
                     recordFound.setStatus(post.getStatus());
                     return postRepository.save(recordFound);
-                });
+                })
+                .orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    // initial version before implementing verifications.
-    // TODO - change return value.
-    public boolean delete(@NotNull UUID id) {
-        return postRepository.findById(id)
-                .map(recordFound -> {
-                    postRepository.deleteById(id);
-                    return true;
-                })
-                .orElse(false);
+    public void delete(@NotNull UUID id) {
+        postRepository.delete(
+                postRepository
+                        .findById(id)
+                        .orElseThrow(() -> new RecordNotFoundException(id))
+        );
     }
 }
