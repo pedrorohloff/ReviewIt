@@ -3,7 +3,6 @@ package com.pedrorohloff.post;
 import com.pedrorohloff.exception.RecordNotFoundException;
 import com.pedrorohloff.post.dto.PostDTO;
 import com.pedrorohloff.post.dto.mapper.PostMapper;
-import com.pedrorohloff.post.enums.Genre;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -27,7 +25,7 @@ public class PostService {
     public List<PostDTO> list() {
         return postRepository.findAll().stream()
                 .map(postMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public PostDTO findById(@NotNull UUID id) {
