@@ -1,5 +1,6 @@
 package com.pedrorohloff.post;
 
+import com.pedrorohloff.post.dto.PostDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
@@ -18,23 +19,23 @@ public class PostController {
     }
 
     @GetMapping
-    public List<Post> list() {
+    public List<PostDTO> list() {
         return postService.list();
     }
 
     @GetMapping("/{id}")
-    public Post findById(@PathVariable("id") @Valid UUID id) {
+    public PostDTO findById(@PathVariable("id") @Valid UUID id) {
         return postService.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Post create(@RequestBody @Valid Post post) {
+    public PostDTO create(@RequestBody @Valid @NotNull PostDTO post) {
         return postService.create(post);
     }
 
     @PutMapping("/{id}")
-    public Post update(@PathVariable("id") @Valid @NotNull UUID id, @Valid @RequestBody Post post) {
+    public PostDTO update(@PathVariable("id") @Valid @NotNull UUID id, @Valid @RequestBody @NotNull PostDTO post) {
         return postService.update(id, post);
     }
 

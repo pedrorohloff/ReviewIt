@@ -1,6 +1,8 @@
 package com.pedrorohloff.post;
 
 import com.pedrorohloff.exception.RecordNotFoundException;
+import com.pedrorohloff.post.dto.PostDTO;
+import com.pedrorohloff.post.dto.mapper.PostMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
@@ -8,44 +10,46 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
 public class PostService {
     private final PostRepository postRepository;
+    private final PostMapper postMapper;
 
-    public PostService(PostRepository postRepository) {
+    public PostService(PostRepository postRepository, PostMapper postMapper) {
         this.postRepository = postRepository;
+        this.postMapper = postMapper;
     }
 
-    public List<Post> list() {
-        return postRepository.findAll();
+    public List<PostDTO> list() {
+        return postRepository.findAll().stream()
+                .map(postMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Post findById(@NotNull UUID id) {
-        return postRepository.findById(id)
+    public PostDTO findById(@NotNull UUID id) {
+        return postRepository.findById(id).map(postMapper::toDTO)
                 .orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    public Post create(@Valid Post post) {
-        return postRepository.save(post);
+    public PostDTO create(@Valid @NotNull PostDTO post) {
+        return postMapper.toDTO(postRepository.save(postMapper.toEntity(post)));
     }
 
-    public Post update(@NotNull UUID id, @Valid Post post) {
+    public PostDTO update(@NotNull UUID id, @Valid @NotNull PostDTO post) {
         return postRepository.findById(id)
                 .map(recordFound -> {
-                    recordFound.setContent(post.getContent());
-                    recordFound.setTitle(post.getTitle());
-                    recordFound.setStatus(post.getStatus());
-                    return postRepository.save(recordFound);
+                    recordFound.setContent(post.content());
+                    recordFound.setTitle(post.title());
+                    return postMapper.toDTO(postRepository.save(recordFound));
                 })
                 .orElseThrow(() -> new RecordNotFoundException(id));
     }
 
     public void delete(@NotNull UUID id) {
-        postRepository.delete(
-                postRepository
-                        .findById(id)
+        postRepository.delete(postRepository.findById(id)
                         .orElseThrow(() -> new RecordNotFoundException(id))
         );
     }
