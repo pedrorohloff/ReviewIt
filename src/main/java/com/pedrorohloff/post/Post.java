@@ -1,6 +1,8 @@
 package com.pedrorohloff.post;
 
+import com.pedrorohloff.post.enums.Genre;
 import com.pedrorohloff.post.enums.Status;
+import com.pedrorohloff.post.enums.converters.GenreConverter;
 import com.pedrorohloff.post.enums.converters.StatusConverter;
 import jakarta.persistence.*;
 import org.hibernate.annotations.SQLDelete;
@@ -19,12 +21,16 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
+    @Convert(converter = GenreConverter.class)
+    @Column(nullable = false)
+    private Genre genre;
+
     @Column(nullable = false)
     private String content;
 
     @Convert(converter = StatusConverter.class)
     @Column(nullable = false)
-    private Status status;
+    private Status status = Status.ACTIVE;
 
     public UUID getId() {
         return id;
@@ -40,6 +46,14 @@ public class Post {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setGenre(Genre genre) {
+         this.genre = genre;
+    }
+
+    public Genre getGenre() {
+        return genre;
     }
 
     public String getContent() {

@@ -3,6 +3,7 @@ package com.pedrorohloff.post;
 import com.pedrorohloff.exception.RecordNotFoundException;
 import com.pedrorohloff.post.dto.PostDTO;
 import com.pedrorohloff.post.dto.mapper.PostMapper;
+import com.pedrorohloff.post.enums.Genre;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
@@ -38,16 +39,17 @@ public class PostService {
         return postMapper.toDTO(postRepository.save(postMapper.toEntity(post)));
     }
 
-    public PostDTO update(@NotNull UUID id, @Valid @NotNull PostDTO post) {
+    public PostDTO update(@NotNull UUID id, @Valid @NotNull PostDTO postDTO) {
         return postRepository.findById(id)
                 .map(recordFound -> {
-                    recordFound.setContent(post.content());
-                    recordFound.setTitle(post.title());
+                    recordFound.setContent(postDTO.content());
+                    recordFound.setTitle(postDTO.title());
+                    recordFound.setGenre(postMapper.convertGenreValue(postDTO.genre()));
                     return postMapper.toDTO(postRepository.save(recordFound));
                 })
                 .orElseThrow(() -> new RecordNotFoundException(id));
     }
-
+    
     public void delete(@NotNull UUID id) {
         postRepository.delete(postRepository.findById(id)
                         .orElseThrow(() -> new RecordNotFoundException(id))

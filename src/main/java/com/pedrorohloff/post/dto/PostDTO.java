@@ -1,5 +1,6 @@
 package com.pedrorohloff.post.dto;
 
+import com.pedrorohloff.post.enums.Genre;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ public record PostDTO (
         // pode adicionar @JsonProperty("_id") caso o nome do id no frontend seja _id
         @Valid UUID id,
         @NotBlank @NotNull @Length(min = 5, max = 120) String title,
+        @NotBlank @NotNull String genre,
         @NotBlank @NotNull String content
 ) {
 }
