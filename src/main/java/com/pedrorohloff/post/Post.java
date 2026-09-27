@@ -1,10 +1,14 @@
 package com.pedrorohloff.post;
 
+import com.pedrorohloff.post.enums.Status;
+import com.pedrorohloff.post.enums.converters.StatusConverter;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.Objects;
 import java.util.UUID;
 
+@SQLDelete(sql = "UPDATE post SET status = 'Inactive' WHERE id=?")
 @Entity
 public class Post {
 
@@ -18,8 +22,9 @@ public class Post {
     @Column(nullable = false)
     private String content;
 
+    @Convert(converter = StatusConverter.class)
     @Column(nullable = false)
-    private String status;
+    private Status status;
 
     public UUID getId() {
         return id;
@@ -45,11 +50,11 @@ public class Post {
         this.content = content;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 

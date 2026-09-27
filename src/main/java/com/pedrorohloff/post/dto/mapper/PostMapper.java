@@ -2,6 +2,7 @@ package com.pedrorohloff.post.dto.mapper;
 
 import com.pedrorohloff.post.Post;
 import com.pedrorohloff.post.dto.PostDTO;
+import com.pedrorohloff.post.enums.Status;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,7 +26,7 @@ public class PostMapper {
         }
         post.setTitle(postDTO.title());
         post.setContent(postDTO.content());
-        post.setStatus("Active");
+        post.setStatus(Status.ACTIVE);
         return post;
     }
 }
