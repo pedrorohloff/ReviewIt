@@ -44,7 +44,7 @@ public class ProfileService {
                      recordFound.setUsername(profileDTO.username());
                      recordFound.setAvatarUrl(profileDTO.avatarUrl());
                      recordFound.setRole(profileMapper.convertRoleValue(profileDTO.role()));
-                     recordFound.setStatus(profileMapper.convertStatusValue(profileDTO.status()));
+                     recordFound.setAccountStatus(profileMapper.convertStatusValue(profileDTO.status()));
                      return profileMapper.toDTO(profileRepository.save(recordFound));
                  })
                  .orElseThrow(() -> new RecordNotFoundException(id));

@@ -1,11 +1,13 @@
 package com.pedrorohloff.profile.enums;
 
 public enum Role {
-    USER("User"), MODERATOR("Moderator"), ADMIN("Admin");
+    REGULAR("Regular"),
+    MODERATOR("Moderator"),
+    ADMIN("Admin");
 
     private String value;
 
-    private Role(String value) {
+    Role(String value) {
         this.value = value;
     }
 
@@ -22,6 +24,9 @@ public enum Role {
         throw new IllegalArgumentException("Invalid Role: " + value);
     }
 
+    /**
+     * Required by @ValueOfEnum
+     */
     @Override
     public String toString() {
         return value;

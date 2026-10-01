@@ -1,48 +1,66 @@
 package com.pedrorohloff.profile;
 
 import com.pedrorohloff.profile.enums.Role;
-import com.pedrorohloff.profile.enums.Status;
+import com.pedrorohloff.profile.enums.AccountStatus;
+import com.pedrorohloff.profile.enums.converters.AccountStatusConverter;
+import com.pedrorohloff.profile.enums.converters.RoleConverter;
 import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "profiles")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class Profile {
 
-    // sem @GeneratedValue, vai ser pego diretamente do Supabase (author_id)
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // retirar depois, apenas para teste
+    @NotNull
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank
+    @NotNull
+    @Length(min = 3, max = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(nullable = false, name = "avatar_url")
+    @Length(max = 500)
+    @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
-    @Column(nullable = false)
-    private Role role = Role.USER;
+    @NotNull
+    @Length(max = 20)
+    @Column(nullable = false, length = 20)
+    @Convert(converter = RoleConverter.class)
+    private Role role = Role.REGULAR;
 
-    @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @NotNull
+    @Length(max = 20)
+    @Column(nullable = false, length = 20)
+    @Convert(converter = AccountStatusConverter.class)
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
 
     @Column(name = "suspended_until")
     private Instant suspendedUntil;
 
-    @Column(nullable = false, name = "created_at")
+    @Column(nullable = false, name = "created_at", updatable = false)
     private Instant createdAt = Instant.now();
 
     public boolean isSuspended() {
-        return status == Status.SUSPENDED
+        return accountStatus == AccountStatus.SUSPENDED
                 && suspendedUntil != null
                 && suspendedUntil.isAfter(Instant.now());
     }
 
     public boolean isBanned() {
-        return status == Status.BANNED;
+        return accountStatus == AccountStatus.BANNED;
     }
 }

@@ -2,8 +2,10 @@ package com.pedrorohloff.profile.dto.mapper;
 
 import com.pedrorohloff.profile.Profile;
 import com.pedrorohloff.profile.dto.ProfileDTO;
+import com.pedrorohloff.profile.dto.ProfileRequestDTO;
+import com.pedrorohloff.profile.dto.ProfileSummaryDTO;
 import com.pedrorohloff.profile.enums.Role;
-import com.pedrorohloff.profile.enums.Status;
+import com.pedrorohloff.profile.enums.AccountStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,32 +20,38 @@ public class ProfileMapper {
                 profile.getUsername(),
                 profile.getAvatarUrl(),
                 profile.getRole().getValue(),
-                profile.getStatus().getValue()
+                profile.getAccountStatus().getValue(),
+                profile.getSuspendedUntil(),
+                profile.getCreatedAt()
         );
     }
 
-    public Profile toEntity(ProfileDTO profileDTO) {
-        if (profileDTO == null) {
+    public ProfileSummaryDTO toSummaryDTO(Profile profile) {
+        if (profile == null) {
             return null;
         }
+        return new ProfileSummaryDTO(
+                profile.getId(),
+                profile.getUsername(),
+                profile.getAvatarUrl()
+        );
+    }
 
-        Profile profile = new Profile();
-        if (profileDTO.id() != null) {
-            profile.setId(profileDTO.id());
+    public Profile toModel(ProfileRequestDTO profileRequestDTO) {
+        if (profileRequestDTO == null) {
+            return null;
         }
-        profile.setUsername(profileDTO.username());
-        profile.setAvatarUrl(profileDTO.avatarUrl());
-        profile.setRole(convertRoleValue(profileDTO.role()));
-        profile.setStatus(convertStatusValue(profileDTO.status()));
+        Profile profile = new Profile();
+        profile.setUsername(profileRequestDTO.username());
+        profile.setAvatarUrl(profileRequestDTO.avatarUrl());
         return profile;
     }
 
-
-    public Status convertStatusValue(String value) {
+    public AccountStatus convertStatusValue(String value) {
         if (value == null) {
             return null;
         }
-        return Status.fromValue(value);
+        return AccountStatus.fromValue(value);
     }
 
     public Role convertRoleValue(String value) {
