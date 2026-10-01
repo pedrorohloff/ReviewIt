@@ -1,86 +1,66 @@
 package com.pedrorohloff.post;
 
+import com.pedrorohloff.post.enums.ContentType;
 import com.pedrorohloff.post.enums.Genre;
-import com.pedrorohloff.post.enums.Status;
+import com.pedrorohloff.post.enums.NotifyChannel;
+import com.pedrorohloff.post.enums.converters.ContentTypeConverter;
 import com.pedrorohloff.post.enums.converters.GenreConverter;
-import com.pedrorohloff.post.enums.converters.StatusConverter;
+import com.pedrorohloff.post.enums.converters.NotifyChannelConverter;
+import com.pedrorohloff.shared.BaseEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.SQLDelete;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
-import java.util.Objects;
+import java.time.Instant;
 import java.util.UUID;
 
-@SQLDelete(sql = "UPDATE post SET status = 'Inactive' WHERE id=?")
 @Entity
-public class Post {
+@Table(name = "posts")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Post extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @NotNull
+    @Column(nullable = false, name = "author_id")
+    private UUID authorId;
 
-    @Column(nullable = false)
+    @NotBlank
+    @NotNull
+    @Length(min = 5, max = 200)
+    @Column(nullable = false, length = 200)
     private String title;
 
+    @NotNull
+    @Column(nullable = false, name = "content_type", length = 20)
+    @Convert(converter = ContentTypeConverter.class)
+    private ContentType contentType;
+
+    @NotNull
     @Convert(converter = GenreConverter.class)
     @Column(nullable = false)
     private Genre genre;
 
-    @Column(nullable = false)
+    @NotBlank
+    @NotNull
+    @Length(min = 10, max = 5000)
+    @Column(nullable = false, length = 5000)
     private String content;
 
-    @Convert(converter = StatusConverter.class)
-    @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @NotBlank
+    @NotNull
+    @Column(nullable = false, name = "notify_enabled")
+    private boolean notifyEnabled;
 
-    public UUID getId() {
-        return id;
-    }
+    @NotNull
+    @Column(nullable = false, name = "notify_channel", length = 20)
+    @Convert(converter = NotifyChannelConverter.class)
+    private NotifyChannel notifyChannel;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setGenre(Genre genre) {
-         this.genre = genre;
-    }
-
-    public Genre getGenre() {
-        return genre;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Post post = (Post) o;
-        return Objects.equals(id, post.id) && Objects.equals(title, post.title) && Objects.equals(content, post.content) && Objects.equals(status, post.status);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, title, content, status);
-    }
+    @Column(nullable = false, name = "updated_at")
+    private Instant updatedAt = Instant.now();
 }
