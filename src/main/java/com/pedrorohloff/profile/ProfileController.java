@@ -1,6 +1,7 @@
 package com.pedrorohloff.profile;
 
 import com.pedrorohloff.profile.dto.ProfileDTO;
+import com.pedrorohloff.profile.dto.ProfileRequestDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
@@ -30,18 +31,21 @@ public class ProfileController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public ProfileDTO create(@RequestBody @Valid @NotNull ProfileDTO profileDTO) {
-        return profileService.create(profileDTO);
+    public ProfileDTO create(@RequestBody @Valid @NotNull ProfileRequestDTO profileRequestDTO) {
+        return profileService.create(profileRequestDTO);
     }
 
     @PutMapping("/{id}")
-    public ProfileDTO update(@PathVariable("id") @Valid @NotNull UUID id, @RequestBody @Valid @NotNull ProfileDTO profileDTO) {
-        return profileService.update(id, profileDTO);
+    public ProfileDTO update(@PathVariable("id") @Valid @NotNull UUID id,
+                             @RequestAttribute("currentUserId") UUID requesterId,
+                             @RequestBody @Valid @NotNull ProfileRequestDTO profileRequestDTO) {
+        return profileService.update(id, requesterId, profileRequestDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("id") @Valid @NotNull UUID id) {
-        profileService.delete(id);
+    public void delete(@PathVariable("id") @Valid @NotNull UUID id,
+                       @RequestAttribute("currentUserId") UUID requesterId) {
+        profileService.delete(id, requesterId);
     }
 }
