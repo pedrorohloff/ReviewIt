@@ -1,38 +1,40 @@
 package com.pedrorohloff.comment;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import com.pedrorohloff.shared.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.Length;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "comments")
-@Data
-public class Comment {
+@Getter
+@Setter
+@NoArgsConstructor
+public class Comment extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(nullable = false, name = "post_id")
+    @NotNull
+    @Column(name = "post_id", nullable = false)
     private UUID postId;
 
-    @Column(nullable = false, name = "author_id")
+    @NotNull
+    @Column(name = "author_id", nullable = false)
     private UUID authorId;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @NotBlank
+    @NotNull
+    @Length(min = 1, max = 2000)
+    @Column(nullable = false, length = 2000)
     private String content;
 
-    @Column(nullable = false, name = "created_at")
-    private Instant createdAt = Instant.now();
-
-    @Column(nullable = false, name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
-
-    @PreUpdate
-    void onUpdate() {
-        updatedAt = Instant.now();
-    }
-
 }

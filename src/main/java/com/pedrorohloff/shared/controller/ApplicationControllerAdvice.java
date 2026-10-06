@@ -1,6 +1,7 @@
 package com.pedrorohloff.shared.controller;
 
 import com.pedrorohloff.exception.BusinessException;
+import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,11 @@ public class ApplicationControllerAdvice {
     @ExceptionHandler(BusinessException.class)
     public ProblemDetail handleBusinessException(BusinessException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbiddenException(ForbiddenException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

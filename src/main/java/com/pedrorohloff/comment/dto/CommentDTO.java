@@ -1,15 +1,16 @@
 package com.pedrorohloff.comment.dto;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.pedrorohloff.profile.dto.ProfileSummaryDTO;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record CommentDTO(
-        @Valid UUID id,
-        @Valid UUID postId,
-        @Valid UUID authorId,
-        @NotBlank @NotNull String content
-) {
-}
+        UUID id,
+        UUID postId,
+        ProfileSummaryDTO author,
+        String content,
+        long likeCount,
+        Instant createdAt,
+        Instant updatedAt
+) {}

@@ -1,46 +1,57 @@
 package com.pedrorohloff.comment;
 
 import com.pedrorohloff.comment.dto.CommentDTO;
+import com.pedrorohloff.comment.dto.CommentPageDTO;
+import com.pedrorohloff.comment.dto.CommentRequestDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
+@Validated
 @RestController
-@RequestMapping("/api/v1/comments")
 public class CommentController {
+
     private final CommentService commentService;
 
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }
 
-    @GetMapping
-    public List<CommentDTO> list() {
-        return commentService.list();
+    @GetMapping("/api/v1/posts/{postId}/comments")
+    public CommentPageDTO findAllByPost(@PathVariable @NotNull UUID postId,
+                                        @RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int pageSize) {
+        return commentService.findAllByPost(postId, page, pageSize);
     }
 
-    @GetMapping("/{id}")
-    public CommentDTO findById(@PathVariable("id") @NotNull UUID id) {
+    @GetMapping("/api/v1/comments/{id}")
+    public CommentDTO findById(@PathVariable @NotNull UUID id) {
         return commentService.findById(id);
     }
 
-    @PostMapping
-    @ResponseStatus(code = HttpStatus.CREATED)
-    public CommentDTO create(@RequestBody @NotNull @Valid CommentDTO commentDTO) {
-        return commentService.create(commentDTO);
+    @PostMapping("/api/v1/posts/{postId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDTO create(@PathVariable @NotNull UUID postId,
+                             @RequestAttribute("currentUserId") UUID authorId,
+                             @RequestBody @Valid CommentRequestDTO dto) {
+        return commentService.create(postId, authorId, dto);
     }
 
-    @PutMapping("/{id}")
-    public CommentDTO update(@PathVariable("id") @NotNull UUID id, @RequestBody @NotNull @Valid CommentDTO commentDTO) {
-        return commentService.update(id, commentDTO);
+    @PutMapping("/api/v1/comments/{id}")
+    public CommentDTO update(@PathVariable @NotNull UUID id,
+                             @RequestAttribute("currentUserId") UUID requesterId,
+                             @RequestBody @Valid CommentRequestDTO dto) {
+        return commentService.update(id, requesterId, dto);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") @NotNull UUID id) {
-        commentService.delete(id);
+    @DeleteMapping("/api/v1/comments/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable @NotNull UUID id,
+                       @RequestAttribute("currentUserId") UUID requesterId) {
+        commentService.delete(id, requesterId);
     }
 }
