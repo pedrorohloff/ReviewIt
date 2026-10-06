@@ -1,16 +1,22 @@
 package com.pedrorohloff.profile;
 
 import com.pedrorohloff.exception.BusinessException;
+import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
 import com.pedrorohloff.profile.dto.ProfileDTO;
+import com.pedrorohloff.profile.dto.ProfilePageDTO;
 import com.pedrorohloff.profile.dto.ProfileRequestDTO;
 import com.pedrorohloff.profile.dto.mapper.ProfileMapper;
+import com.pedrorohloff.profile.enums.AccountStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,10 +30,21 @@ public class ProfileService {
         this.profileMapper = profileMapper;
     }
 
-    public List<ProfileDTO> list() {
-        return profileRepository.findAll().stream()
+    @Transactional(readOnly = true)
+    public ProfilePageDTO list(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Profile> profilePage = profileRepository.findAll(pageable);
+
+        var profiles = profilePage.getContent().stream()
                 .map(profileMapper::toDTO)
                 .toList();
+
+        return new ProfilePageDTO(
+                profiles,
+                profilePage.getTotalElements(),
+                profilePage.getTotalPages(),
+                profilePage.hasNext()
+        );
     }
 
     public ProfileDTO findById(@NotNull UUID id) {
@@ -41,24 +58,43 @@ public class ProfileService {
         return profileMapper.toDTO(profileRepository.save(profile));
     }
 
+    @Transactional
     public ProfileDTO update(@NotNull UUID id, @NotNull UUID requesterId, @Valid @NotNull ProfileRequestDTO profileRequestDTO) {
-        if (!id.equals(requesterId)) {
-            throw new BusinessException("User can only update their own profile");
-        }
-        return profileRepository.findById(id)
-                .map(recordFound -> {
-                    recordFound.setUsername(profileRequestDTO.username());
-                    recordFound.setAvatarUrl(profileRequestDTO.avatarUrl());
-                    return profileMapper.toDTO(profileRepository.save(recordFound));
-                })
+        Profile profile = profileRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException(id));
+
+        if (!id.equals(requesterId)) {
+            throw new ForbiddenException("You can only update your own profile");
+        }
+
+        checkAccountStatus(profile);
+
+        profile.setUsername(profileRequestDTO.username());
+        profile.setAvatarUrl(profileRequestDTO.avatarUrl());
+
+        return profileMapper.toDTO(profileRepository.save(profile));
     }
 
+    @Transactional
     public void delete(@NotNull UUID id, @NotNull UUID requesterId) {
+        Profile profile = profileRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException(id));
+
         if (!id.equals(requesterId)) {
-            throw new BusinessException("User can only delete their own profile");
+            throw new ForbiddenException("You can only delete your own profile");
         }
-        profileRepository.delete(profileRepository.findById(id)
-                .orElseThrow(() -> new RecordNotFoundException(id)));
+
+        checkAccountStatus(profile);
+
+        profileRepository.delete(profile);
+    }
+
+    private void checkAccountStatus(Profile profile) {
+        if (profile.getAccountStatus() == AccountStatus.SUSPENDED) {
+            throw new BusinessException("Account is suspended");
+        }
+        if (profile.getAccountStatus() == AccountStatus.BANNED) {
+            throw new BusinessException("Account is banned");
+        }
     }
 }

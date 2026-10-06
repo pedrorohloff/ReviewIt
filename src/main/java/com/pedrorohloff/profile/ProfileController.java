@@ -1,15 +1,20 @@
 package com.pedrorohloff.profile;
 
 import com.pedrorohloff.profile.dto.ProfileDTO;
+import com.pedrorohloff.profile.dto.ProfilePageDTO;
 import com.pedrorohloff.profile.dto.ProfileRequestDTO;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1/profiles")
 public class ProfileController {
@@ -20,8 +25,9 @@ public class ProfileController {
     }
 
     @GetMapping
-    public List<ProfileDTO> list() {
-        return profileService.list();
+    public ProfilePageDTO list(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
+                               @RequestParam(defaultValue = "10") @Positive @Max(100) int pageSize) {
+        return profileService.list(page, pageSize);
     }
 
     @GetMapping("/{id}")
