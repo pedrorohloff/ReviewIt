@@ -1,22 +1,29 @@
 package com.pedrorohloff.post;
 
+import com.pedrorohloff.exception.BusinessException;
+import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
 import com.pedrorohloff.post.dto.PostDTO;
+import com.pedrorohloff.post.dto.PostPageDTO;
 import com.pedrorohloff.post.dto.PostRequestDTO;
+import com.pedrorohloff.post.dto.UpdateNotificationSettingsRequestDTO;
 import com.pedrorohloff.post.dto.mapper.PostMapper;
 import com.pedrorohloff.profile.Profile;
 import com.pedrorohloff.profile.ProfileRepository;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import com.pedrorohloff.profile.enums.AccountStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
 @Validated
 public class PostService {
+
     private final PostRepository postRepository;
     private final ProfileRepository profileRepository;
     private final PostMapper postMapper;
@@ -29,57 +36,108 @@ public class PostService {
         this.postMapper = postMapper;
     }
 
-    public List<PostDTO> list() {
-        return postRepository.findAll().stream()
+    @Transactional(readOnly = true)
+    public PostPageDTO findAll(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        var posts = postPage.getContent().stream()
                 .map(post -> {
                     Profile author = profileRepository.findById(post.getAuthorId())
                             .orElse(null);
                     return postMapper.toDTO(post, author, 0, 0);
                 })
                 .toList();
+
+        return new PostPageDTO(
+                posts,
+                postPage.getTotalElements(),
+                postPage.getTotalPages(),
+                postPage.hasNext()
+        );
     }
 
-    public PostDTO findById(@NotNull UUID id) {
+    @Transactional(readOnly = true)
+    public PostDTO findById(UUID id) {
         return postRepository.findById(id)
                 .map(post -> {
                     Profile author = profileRepository.findById(post.getAuthorId())
                             .orElse(null);
                     return postMapper.toDTO(post, author, 0, 0);
                 })
-                .orElseThrow(() -> new RecordNotFoundException(id));
+                .orElseThrow(() -> new RecordNotFoundException("Post", id));
     }
 
-    public PostDTO create(@NotNull UUID authorId, @Valid @NotNull PostRequestDTO postRequestDTO) {
+    @Transactional
+    public PostDTO create(UUID authorId, PostRequestDTO postRequestDTO) {
         Profile author = profileRepository.findById(authorId)
-                .orElseThrow(() -> new RecordNotFoundException(authorId));
+                .orElseThrow(() -> new RecordNotFoundException("Profile", authorId));
+
+        checkAccountStatus(author);
+
         Post post = postMapper.toModel(postRequestDTO, authorId);
         Post saved = postRepository.save(post);
         return postMapper.toDTO(saved, author, 0, 0);
     }
 
-    public PostDTO update(@NotNull UUID id, @NotNull UUID requesterId, @Valid @NotNull PostRequestDTO postRequestDTO) {
-        return postRepository.findById(id)
-                .map(recordFound -> {
-                    if (!recordFound.getAuthorId().equals(requesterId)) {
-                        throw new com.pedrorohloff.exception.BusinessException("User is not the author of this post");
-                    }
-                    recordFound.setTitle(postRequestDTO.title());
-                    recordFound.setContentType(postMapper.convertContentTypeValue(postRequestDTO.contentType()));
-                    recordFound.setGenre(postMapper.convertGenreValue(postRequestDTO.genre()));
-                    recordFound.setContent(postRequestDTO.content());
-                    Profile author = profileRepository.findById(recordFound.getAuthorId())
-                            .orElse(null);
-                    return postMapper.toDTO(postRepository.save(recordFound), author, 0, 0);
-                })
-                .orElseThrow(() -> new RecordNotFoundException(id));
+    @Transactional
+    public PostDTO update(UUID id, UUID requesterId, PostRequestDTO postRequestDTO) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Post", id));
+
+        if (!post.getAuthorId().equals(requesterId)) {
+            throw new ForbiddenException("You are not the author of this post");
+        }
+
+        Profile author = profileRepository.findById(post.getAuthorId())
+                .orElseThrow(() -> new RecordNotFoundException("Profile", post.getAuthorId()));
+
+        checkAccountStatus(author);
+
+        post.setTitle(postRequestDTO.title());
+        post.setContentType(postMapper.convertContentTypeValue(postRequestDTO.contentType()));
+        post.setGenre(postMapper.convertGenreValue(postRequestDTO.genre()));
+        post.setContent(postRequestDTO.content());
+
+        return postMapper.toDTO(postRepository.save(post), author, 0, 0);
     }
 
-    public void delete(@NotNull UUID id, @NotNull UUID requesterId) {
+    @Transactional
+    public void delete(UUID id, UUID requesterId) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RecordNotFoundException(id));
+                .orElseThrow(() -> new RecordNotFoundException("Post", id));
+
         if (!post.getAuthorId().equals(requesterId)) {
-            throw new com.pedrorohloff.exception.BusinessException("User is not the author of this post");
+            throw new ForbiddenException("You are not the author of this post");
         }
+
         postRepository.delete(post);
+    }
+
+    @Transactional
+    public PostDTO updateNotificationSettings(UUID id, UUID requesterId, UpdateNotificationSettingsRequestDTO dto) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RecordNotFoundException("Post", id));
+
+        if (!post.getAuthorId().equals(requesterId)) {
+            throw new ForbiddenException("You are not the author of this post");
+        }
+
+        post.setNotifyEnabled(dto.notifyEnabled());
+        post.setNotifyChannel(postMapper.convertNotifyChannelValue(dto.notifyChannel()));
+
+        Profile author = profileRepository.findById(post.getAuthorId())
+                .orElseThrow(() -> new RecordNotFoundException("Profile", post.getAuthorId()));
+
+        return postMapper.toDTO(postRepository.save(post), author, 0, 0);
+    }
+
+    private void checkAccountStatus(Profile author) {
+        if (author.getStatus() == AccountStatus.SUSPENDED) {
+            throw new BusinessException("Account is suspended");
+        }
+        if (author.getStatus() == AccountStatus.BANNED) {
+            throw new BusinessException("Account is banned");
+        }
     }
 }
