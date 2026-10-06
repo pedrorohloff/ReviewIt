@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 misc/
 .vibe-wise/
+.env
 
 ### STS ###
 .apt_generated
