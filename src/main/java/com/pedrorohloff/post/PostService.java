@@ -133,10 +133,10 @@ public class PostService {
     }
 
     private void checkAccountStatus(Profile author) {
-        if (author.getStatus() == AccountStatus.SUSPENDED) {
+        if (author.getAccountStatus() == AccountStatus.SUSPENDED) {
             throw new BusinessException("Account is suspended");
         }
-        if (author.getStatus() == AccountStatus.BANNED) {
+        if (author.getAccountStatus() == AccountStatus.BANNED) {
             throw new BusinessException("Account is banned");
         }
     }

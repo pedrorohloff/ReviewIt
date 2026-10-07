@@ -6,6 +6,7 @@ target/
 misc/
 .vibe-wise/
 .env
+.env.properties
 
 ### STS ###
 .apt_generated
