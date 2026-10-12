@@ -19,9 +19,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentLike extends BaseEntity {
-    @Column(name = "comment_id")
+    @Column(name = "comment_id", nullable = false)
     private UUID commentId;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private UUID userId;
 }

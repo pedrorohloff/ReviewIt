@@ -5,5 +5,7 @@ import java.util.List;
 public record CommentPageDTO(
         List<CommentDTO> comments,
         long totalElements,
-        int totalPages
-) {}
+        int totalPages,
+        boolean hasNext
+) {
+}

@@ -49,7 +49,8 @@ public class CommentService {
         return new CommentPageDTO(
                 comments,
                 commentPage.getTotalElements(),
-                commentPage.getTotalPages()
+                commentPage.getTotalPages(),
+                commentPage.hasNext()
         );
     }
 
