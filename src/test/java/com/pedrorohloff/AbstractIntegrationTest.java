@@ -22,5 +22,15 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+
+        // Build the schema from the JPA entities in the throwaway container.
+        // The application runs against Supabase with ddl-auto=none, so without
+        // this every repository call would fail with "relation does not exist".
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+
+        // JwtFilter requires these @Value properties; provide throwaway values so
+        // the context starts without a local .env.properties file.
+        registry.add("supabase.jwt.jwks-url", () -> "https://example.invalid/jwks");
+        registry.add("supabase.jwt.issuer", () -> "https://example.invalid/auth/v1");
     }
 }
