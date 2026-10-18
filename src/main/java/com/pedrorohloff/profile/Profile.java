@@ -23,6 +23,7 @@ import java.util.UUID;
 public class Profile {
 
     @Id
+    @GeneratedValue
     @NotNull
     private UUID id;
 
@@ -37,13 +38,11 @@ public class Profile {
     private String avatarUrl;
 
     @NotNull
-    @Length(max = 20)
     @Column(nullable = false, length = 20)
     @Convert(converter = RoleConverter.class)
     private Role role = Role.REGULAR;
 
     @NotNull
-    @Length(max = 20)
     @Column(nullable = false, length = 20)
     @Convert(converter = AccountStatusConverter.class)
     private AccountStatus accountStatus = AccountStatus.ACTIVE;

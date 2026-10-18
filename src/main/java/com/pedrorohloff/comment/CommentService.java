@@ -4,10 +4,12 @@ import com.pedrorohloff.comment.dto.CommentDTO;
 import com.pedrorohloff.comment.dto.CommentPageDTO;
 import com.pedrorohloff.comment.dto.CommentRequestDTO;
 import com.pedrorohloff.comment.dto.mapper.CommentMapper;
+import com.pedrorohloff.exception.BusinessException;
 import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
 import com.pedrorohloff.profile.Profile;
 import com.pedrorohloff.profile.ProfileRepository;
+import com.pedrorohloff.profile.enums.AccountStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -70,6 +72,8 @@ public class CommentService {
         Profile author = profileRepository.findById(authorId)
                 .orElseThrow(() -> new RecordNotFoundException("Profile", authorId));
 
+        checkAccountStatus(author);
+
         Comment comment = commentMapper.toModel(dto, postId, authorId);
         Comment saved = commentRepository.save(comment);
 
@@ -104,5 +108,14 @@ public class CommentService {
         }
 
         commentRepository.delete(comment);
+    }
+
+    private void checkAccountStatus(Profile author) {
+        if (author.getAccountStatus() == AccountStatus.SUSPENDED) {
+            throw new BusinessException("Account is suspended");
+        }
+        if (author.getAccountStatus() == AccountStatus.BANNED) {
+            throw new BusinessException("Account is banned");
+        }
     }
 }

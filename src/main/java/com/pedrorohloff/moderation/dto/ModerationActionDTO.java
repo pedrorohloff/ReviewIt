@@ -7,6 +7,6 @@ public record ModerationActionDTO(
         UUID moderatorId,
         UUID targetUserId,
         String actionType,
-        int durationDays
+        Integer durationDays
 ) {
 }

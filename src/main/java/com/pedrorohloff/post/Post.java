@@ -51,15 +51,14 @@ public class Post extends BaseEntity {
     @Column(nullable = false, length = 5000)
     private String content;
 
-    @NotBlank
     @NotNull
     @Column(nullable = false, name = "notify_enabled")
-    private boolean notifyEnabled;
+    private boolean notifyEnabled = true;
 
     @NotNull
     @Column(nullable = false, name = "notify_channel", length = 20)
     @Convert(converter = NotifyChannelConverter.class)
-    private NotifyChannel notifyChannel;
+    private NotifyChannel notifyChannel = NotifyChannel.IN_APP;
 
     @Column(nullable = false, name = "updated_at")
     private Instant updatedAt = Instant.now();

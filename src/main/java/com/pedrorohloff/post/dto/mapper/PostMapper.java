@@ -58,14 +58,14 @@ public class PostMapper {
     }
 
     public ContentType convertContentTypeValue(String value) {
-        return value == null ? null : ContentType.valueOf(value);
+        return value == null ? null : ContentType.fromValue(value);
     }
 
     public Genre convertGenreValue(String value) {
-        return value == null ? null : Genre.valueOf(value);
+        return value == null ? null : Genre.fromValue(value);
     }
 
     public NotifyChannel convertNotifyChannelValue(String value) {
-        return value == null ? null : NotifyChannel.valueOf(value);
+        return value == null ? null : NotifyChannel.fromValue(value);
     }
 }

@@ -143,7 +143,7 @@ class PostControllerTest extends AbstractIntegrationTest {
     void shouldReturn409WhenCreatingPostAsSuspendedUser() throws Exception {
         Profile suspended = profileRepository.save(TestDataFactory.createProfile(
                 "suspended_poster", Role.REGULAR, AccountStatus.SUSPENDED, Instant.now().plusSeconds(3600)));
-        PostRequestDTO dto = new PostRequestDTO("Title", "Book", "Action", "Content.");
+        PostRequestDTO dto = new PostRequestDTO("Title", "Book", "Action", "This is test content for validation rules.");
 
         mockMvc.perform(post("/api/v1/posts")
                         .requestAttr("currentUserId", suspended.getId())
@@ -156,7 +156,7 @@ class PostControllerTest extends AbstractIntegrationTest {
     void shouldReturn409WhenCreatingPostAsBannedUser() throws Exception {
         Profile banned = profileRepository.save(TestDataFactory.createProfile(
                 "banned_poster", Role.REGULAR, AccountStatus.BANNED, null));
-        PostRequestDTO dto = new PostRequestDTO("Title", "Book", "Action", "Content.");
+        PostRequestDTO dto = new PostRequestDTO("Title", "Book", "Action", "This is test content for validation rules.");
 
         mockMvc.perform(post("/api/v1/posts")
                         .requestAttr("currentUserId", banned.getId())

@@ -39,7 +39,6 @@ public class TestDataFactory {
 
     public static Profile createProfile(String username, Role role, AccountStatus status, Instant suspendedUntil) {
         Profile profile = new Profile();
-        profile.setId(UUID.randomUUID());
         profile.setUsername(username);
         profile.setAvatarUrl("https://example.com/" + username + ".png");
         profile.setRole(role);
@@ -64,7 +63,6 @@ public class TestDataFactory {
 
     public static Post createPost(UUID authorId, String title, ContentType contentType, Genre genre) {
         Post post = new Post();
-        post.setId(UUID.randomUUID());
         post.setAuthorId(authorId);
         post.setTitle(title);
         post.setContentType(contentType);
@@ -83,7 +81,6 @@ public class TestDataFactory {
 
     public static Comment createComment(UUID postId, UUID authorId, String content) {
         Comment comment = new Comment();
-        comment.setId(UUID.randomUUID());
         comment.setPostId(postId);
         comment.setAuthorId(authorId);
         comment.setContent(content);
@@ -94,7 +91,7 @@ public class TestDataFactory {
 
     public static PostLike createPostLike(UUID postId, UUID userId) {
         PostLike like = new PostLike();
-        like.setId(UUID.randomUUID());
+
         like.setPostId(postId);
         like.setUserId(userId);
         return like;
@@ -104,7 +101,7 @@ public class TestDataFactory {
 
     public static CommentLike createCommentLike(UUID commentId, UUID userId) {
         CommentLike like = new CommentLike();
-        like.setId(UUID.randomUUID());
+
         like.setCommentId(commentId);
         like.setUserId(userId);
         return like;
@@ -126,7 +123,6 @@ public class TestDataFactory {
 
     public static Report createReport(UUID reporterId, UUID postId, UUID commentId, String reason, ReportStatus status) {
         Report report = new Report();
-        report.setId(UUID.randomUUID());
         report.setReporterId(reporterId);
         report.setPostId(postId);
         report.setCommentId(commentId);
@@ -143,7 +139,6 @@ public class TestDataFactory {
 
     public static ModerationAction createModerationAction(UUID reportId, UUID moderatorId, UUID targetUserId, ActionType actionType, Integer durationDays) {
         ModerationAction action = new ModerationAction();
-        action.setId(UUID.randomUUID());
         action.setReportId(reportId);
         action.setModeratorId(moderatorId);
         action.setTargetUserId(targetUserId);
@@ -160,7 +155,6 @@ public class TestDataFactory {
 
     public static Notification createNotification(UUID userId, UUID postId, NotificationType type, DeliveryChannel channel, Instant readAt) {
         Notification notification = new Notification();
-        notification.setId(UUID.randomUUID());
         notification.setUserId(userId);
         notification.setPostId(postId);
         notification.setType(type);

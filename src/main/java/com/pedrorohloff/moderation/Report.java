@@ -32,6 +32,6 @@ public class Report extends BaseEntity {
 
     @Column(nullable = false)
     @Convert(converter = ReportStatusConverter.class)
-    private ReportStatus status;
+    private ReportStatus status = ReportStatus.PENDING;
 
 }

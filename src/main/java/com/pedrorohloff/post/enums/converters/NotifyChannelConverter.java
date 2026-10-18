@@ -15,6 +15,6 @@ public class NotifyChannelConverter implements AttributeConverter<NotifyChannel,
 
     @Override
     public NotifyChannel convertToEntityAttribute(String value) {
-        return value == null ? null : NotifyChannel.valueOf(value);
+        return value == null ? null : NotifyChannel.fromValue(value);
     }
 }
