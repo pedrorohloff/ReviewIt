@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Post } from '@app/core/models/post';
 import { LikeService } from '@app/features/likes/like.service';
 import { RelativeTimePipe } from '@app/shared/pipes/relative-time-pipe';
@@ -10,7 +11,7 @@ import { ReviewCover } from './review-cover';
 @Component({
   selector: 'app-review-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Avatar, Icon, RelativeTimePipe, ReviewCover],
+  imports: [Avatar, Icon, RelativeTimePipe, ReviewCover, RouterLink],
   templateUrl: './review-card.html',
   styleUrl: './review-card.css',
 })
@@ -21,6 +22,7 @@ export class ReviewCard {
 
   protected readonly typeLabel = computed(() => contentTypeLabel(this.post().contentType));
   protected readonly genreLabel = computed(() => genreLabel(this.post().genre));
+  protected readonly linkLabel = computed(() => `Ler review: ${this.post().title}`);
   protected readonly likeLabel = computed(() => {
     const post = this.post();
     const action = post.likedByMe ? 'Remover curtida' : 'Curtir';

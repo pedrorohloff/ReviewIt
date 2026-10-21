@@ -17,6 +17,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/feed/feed-page').then((m) => m.FeedPage),
       },
       {
+        path: 'posts/:id',
+        title: 'Review · ReviewIt',
+        loadComponent: () =>
+          import('./features/posts/post-detail-page').then((m) => m.PostDetailPage),
+      },
+      {
         path: '403',
         title: 'Acesso negado · ReviewIt',
         loadComponent: () => import('./pages/forbidden-page').then((m) => m.ForbiddenPage),

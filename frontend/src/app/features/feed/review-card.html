@@ -1,4 +1,11 @@
 <article class="card">
+  <a
+    class="card__link"
+    [routerLink]="['/posts', post().id]"
+    [state]="{ fromFeed: true }"
+    [attr.aria-label]="linkLabel()"
+  ></a>
+
   <app-review-cover class="card__cover" [type]="post().contentType" [title]="post().title" />
 
   <div class="card__body">

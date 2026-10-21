@@ -1,0 +1,101 @@
+<section
+  #detailPanel
+  class="detail-panel"
+  role="region"
+  aria-label="Review"
+  tabindex="0"
+>
+  <div class="detail-column">
+    <button type="button" class="back" (click)="goBack()">
+      <app-icon name="arrow-left" [size]="16" />
+      Voltar
+    </button>
+
+    @if (status() === 'loading' && !post()) {
+      <div class="skeleton" role="status">
+        <span class="skeleton__label">Carregando review…</span>
+        <div class="skeleton__chips" aria-hidden="true">
+          <span class="skeleton__chip"></span>
+          <span class="skeleton__chip skeleton__chip--short"></span>
+        </div>
+        <div class="skeleton__title" aria-hidden="true"></div>
+        <div class="skeleton__byline" aria-hidden="true"></div>
+        <div class="skeleton__line" aria-hidden="true"></div>
+        <div class="skeleton__line" aria-hidden="true"></div>
+        <div class="skeleton__line skeleton__line--medium" aria-hidden="true"></div>
+      </div>
+    } @else if (status() === 'notFound') {
+      <div class="state" role="alert">
+        <p class="state__title">Review não encontrada</p>
+        <p class="state__copy">Ela pode ter sido removida ou o link está incorreto.</p>
+        <a class="state__action" routerLink="/" [state]="{ fromFeed: true }">Voltar para o feed</a>
+      </div>
+    } @else if (status() === 'error' && !post()) {
+      <div class="state" role="alert">
+        <p class="state__title">Não foi possível carregar a review</p>
+        <p class="state__copy">{{ errorMessage() }}</p>
+        <button type="button" class="state__action" (click)="retry()">Tentar novamente</button>
+      </div>
+    } @else if (post(); as post) {
+      <article class="review">
+        <header class="review__head">
+          <div class="review__meta">
+            <span class="meta-chip meta-chip--type">{{ typeLabel() }}</span>
+            <span class="meta-chip">{{ genreLabel() }}</span>
+            <time class="review__time" [attr.datetime]="post.createdAt">
+              {{ post.createdAt | relativeTime }}
+            </time>
+          </div>
+
+          <h1>{{ post.title }}</h1>
+
+          <div class="byline">
+            <app-avatar
+              [name]="post.author.username"
+              [url]="post.author.avatarUrl"
+              [size]="40"
+            />
+
+            <div class="byline__who">
+              <span class="byline__name">{{ post.author.username }}</span>
+              <span class="byline__date">
+                Publicado em {{ post.createdAt | dateFormat: 'long' }}
+              </span>
+            </div>
+
+            <div class="byline__actions">
+              <button
+                type="button"
+                class="like"
+                [class.like--on]="post.likedByMe"
+                [attr.aria-pressed]="post.likedByMe ? 'true' : 'false'"
+                [attr.aria-label]="likeLabel()"
+                (click)="toggleLike()"
+              >
+                <app-icon
+                  name="heart"
+                  [size]="17"
+                  [strokeWidth]="post.likedByMe ? 2.25 : 1.75"
+                  [filled]="!!post.likedByMe"
+                />
+                <span>{{ post.likeCount }}</span>
+              </button>
+
+              <button
+                type="button"
+                class="icon-button"
+                aria-label="Copiar link da review"
+                title="Copiar link"
+                (click)="copyLink()"
+              >
+                <app-icon name="share" [size]="17" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <p class="review__body">{{ post.content }}</p>
+      </article>
+    }
+  </div>
+</section>

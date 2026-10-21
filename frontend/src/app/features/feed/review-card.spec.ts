@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { REVIEW_API, ReviewApi } from '@app/core/api/review-api';
 import { Post } from '@app/core/models/post';
@@ -19,7 +20,10 @@ function setup(post: Post = fixturePost()) {
   const togglePostLike = vi.fn(() => of({ liked: true, likeCount: post.likeCount + 1 }));
 
   TestBed.configureTestingModule({
-    providers: [{ provide: REVIEW_API, useValue: { togglePostLike } as unknown as ReviewApi }],
+    providers: [
+      provideRouter([]),
+      { provide: REVIEW_API, useValue: { togglePostLike } as unknown as ReviewApi },
+    ],
   });
 
   const fixture = TestBed.createComponent(ReviewCard);
