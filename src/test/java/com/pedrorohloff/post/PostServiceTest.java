@@ -5,9 +5,13 @@ import com.pedrorohloff.TestDataFactory;
 import com.pedrorohloff.exception.BusinessException;
 import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
+import com.pedrorohloff.like.PostLikeRepository;
 import com.pedrorohloff.post.dto.PostDTO;
 import com.pedrorohloff.post.dto.PostPageDTO;
 import com.pedrorohloff.post.dto.PostRequestDTO;
+import com.pedrorohloff.post.enums.ContentType;
+import com.pedrorohloff.post.enums.Genre;
+import com.pedrorohloff.post.enums.PostSort;
 import com.pedrorohloff.profile.Profile;
 import com.pedrorohloff.profile.ProfileRepository;
 import com.pedrorohloff.profile.enums.AccountStatus;
@@ -31,6 +35,13 @@ class PostServiceTest extends AbstractIntegrationTest {
     @Autowired
     private ProfileRepository profileRepository;
 
+    @Autowired
+    private PostLikeRepository postLikeRepository;
+
+    private PostQuery recentQuery() {
+        return new PostQuery(null, null, null, null, PostSort.RECENT);
+    }
+
     // ============ HAPPY PATH ============
 
     @Test
@@ -39,7 +50,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         postRepository.save(TestDataFactory.createPost(author.getId()));
         postRepository.save(TestDataFactory.createPost(author.getId()));
 
-        PostPageDTO result = postService.findAll(0, 10);
+        PostPageDTO result = postService.findAll(recentQuery(), 0, 10);
 
         assertNotNull(result);
         assertTrue(result.totalElements() >= 2);
@@ -48,7 +59,7 @@ class PostServiceTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnEmptyPageWhenNoPostsExist() {
-        PostPageDTO result = postService.findAll(0, 10);
+        PostPageDTO result = postService.findAll(recentQuery(), 0, 10);
 
         assertNotNull(result);
         assertEquals(0, result.totalElements());
@@ -104,6 +115,106 @@ class PostServiceTest extends AbstractIntegrationTest {
         postService.delete(saved.getId(), author.getId());
 
         assertFalse(postRepository.findById(saved.getId()).isPresent());
+    }
+
+    // ============ FEED QUERY ============
+
+    @Test
+    void shouldFilterPostsByContentType() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("filter_type_author"));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Book Review", ContentType.BOOK, Genre.ACTION));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Movie Review", ContentType.MOVIE, Genre.ACTION));
+
+        PostPageDTO result = postService.findAll(
+                new PostQuery(null, ContentType.MOVIE, null, null, null), 0, 10);
+
+        assertEquals(1, result.totalElements());
+        assertEquals("Movie", result.content().get(0).contentType());
+    }
+
+    @Test
+    void shouldFilterPostsByGenre() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("filter_genre_author"));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Romance Tale", ContentType.BOOK, Genre.ROMANCE));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Scary Tale", ContentType.BOOK, Genre.HORROR));
+
+        PostPageDTO result = postService.findAll(
+                new PostQuery(null, null, Genre.ROMANCE, null, null), 0, 10);
+
+        assertEquals(1, result.totalElements());
+        assertEquals("Romance", result.content().get(0).genre());
+    }
+
+    @Test
+    void shouldFilterPostsByAuthor() {
+        Profile authorOne = profileRepository.save(TestDataFactory.createProfile("filter_author_one"));
+        Profile authorTwo = profileRepository.save(TestDataFactory.createProfile("filter_author_two"));
+        postRepository.save(TestDataFactory.createPost(authorOne.getId(), "First Author Post"));
+        postRepository.save(TestDataFactory.createPost(authorTwo.getId(), "Second Author Post"));
+
+        PostPageDTO result = postService.findAll(
+                new PostQuery(null, null, null, authorOne.getId(), null), 0, 10);
+
+        assertEquals(1, result.totalElements());
+        assertEquals(authorOne.getId(), result.content().get(0).author().id());
+    }
+
+    @Test
+    void shouldSearchPostsByTitleOrContentIgnoringCase() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("search_author"));
+        postRepository.save(TestDataFactory.createPost(
+                author.getId(), "Hidden Treasure", ContentType.BOOK, Genre.ACTION));
+        Post other = TestDataFactory.createPost(author.getId(), "Plain Title", ContentType.BOOK, Genre.ACTION);
+        other.setContent("A story about Chrono Trigger and time travel.");
+        postRepository.save(other);
+
+        PostPageDTO byTitle = postService.findAll(
+                new PostQuery("treasure", null, null, null, null), 0, 10);
+        assertEquals(1, byTitle.totalElements());
+
+        PostPageDTO byContent = postService.findAll(
+                new PostQuery("CHRONO", null, null, null, null), 0, 10);
+        assertEquals(1, byContent.totalElements());
+        assertEquals(other.getId(), byContent.content().get(0).id());
+    }
+
+    @Test
+    void shouldOrderPopularPostsByLikeCount() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("popular_author"));
+        Profile likerOne = profileRepository.save(TestDataFactory.createProfile("popular_liker_one"));
+        Profile likerTwo = profileRepository.save(TestDataFactory.createProfile("popular_liker_two"));
+        Profile likerThree = profileRepository.save(TestDataFactory.createProfile("popular_liker_three"));
+
+        Post lessLiked = postRepository.save(TestDataFactory.createPost(
+                author.getId(), "Less Liked", ContentType.BOOK, Genre.ACTION));
+        Post mostLiked = postRepository.save(TestDataFactory.createPost(
+                author.getId(), "Most Liked", ContentType.BOOK, Genre.ACTION));
+
+        postLikeRepository.save(TestDataFactory.createPostLike(mostLiked.getId(), likerOne.getId()));
+        postLikeRepository.save(TestDataFactory.createPostLike(mostLiked.getId(), likerTwo.getId()));
+        postLikeRepository.save(TestDataFactory.createPostLike(lessLiked.getId(), likerThree.getId()));
+
+        PostPageDTO result = postService.findAll(
+                new PostQuery(null, null, null, null, PostSort.POPULAR), 0, 10);
+
+        assertEquals(2, result.totalElements());
+        assertEquals(mostLiked.getId(), result.content().get(0).id());
+        assertEquals(lessLiked.getId(), result.content().get(1).id());
+    }
+
+    @Test
+    void shouldCombineFiltersAndSort() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("combined_author"));
+        Post movie = postRepository.save(TestDataFactory.createPost(
+                author.getId(), "Combined Movie", ContentType.MOVIE, Genre.DRAMA));
+        postRepository.save(TestDataFactory.createPost(
+                author.getId(), "Combined Book", ContentType.BOOK, Genre.DRAMA));
+
+        PostPageDTO result = postService.findAll(
+                new PostQuery(null, ContentType.MOVIE, Genre.DRAMA, author.getId(), PostSort.POPULAR), 0, 10);
+
+        assertEquals(1, result.totalElements());
+        assertEquals(movie.getId(), result.content().get(0).id());
     }
 
     // ============ BAD PATH ============

@@ -4,6 +4,9 @@ import com.pedrorohloff.post.dto.PostDTO;
 import com.pedrorohloff.post.dto.PostPageDTO;
 import com.pedrorohloff.post.dto.PostRequestDTO;
 import com.pedrorohloff.post.dto.UpdateNotificationSettingsRequestDTO;
+import com.pedrorohloff.post.enums.ContentType;
+import com.pedrorohloff.post.enums.Genre;
+import com.pedrorohloff.post.enums.PostSort;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -28,8 +31,19 @@ public class PostController {
 
     @GetMapping
     public PostPageDTO findAll(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
-                               @RequestParam(defaultValue = "10") @Positive @Max(100) int pageSize) {
-        return postService.findAll(page, pageSize);
+                               @RequestParam(defaultValue = "10") @Positive @Max(100) int pageSize,
+                               @RequestParam(required = false) String q,
+                               @RequestParam(required = false) String contentType,
+                               @RequestParam(required = false) String genre,
+                               @RequestParam(defaultValue = "recent") String sort,
+                               @RequestParam(required = false) UUID authorId) {
+        PostQuery query = new PostQuery(
+                q,
+                contentType == null ? null : ContentType.fromValue(contentType),
+                genre == null ? null : Genre.fromValue(genre),
+                authorId,
+                PostSort.fromValue(sort));
+        return postService.findAll(query, page, pageSize);
     }
 
     @GetMapping("/{id}")

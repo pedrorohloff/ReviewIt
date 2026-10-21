@@ -8,16 +8,20 @@ import com.pedrorohloff.post.dto.PostPageDTO;
 import com.pedrorohloff.post.dto.PostRequestDTO;
 import com.pedrorohloff.post.dto.UpdateNotificationSettingsRequestDTO;
 import com.pedrorohloff.post.dto.mapper.PostMapper;
+import com.pedrorohloff.post.enums.PostSort;
 import com.pedrorohloff.profile.Profile;
 import com.pedrorohloff.profile.ProfileRepository;
 import com.pedrorohloff.profile.enums.AccountStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,11 +41,30 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostPageDTO findAll(int page, int pageSize) {
+    public PostPageDTO findAll(PostQuery query, int page, int pageSize) {
+        Specification<Post> specification = PostSpecifications.withFilter(query);
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<Post> postPage = postRepository.findAll(pageable);
 
-        var posts = postPage.getContent().stream()
+        List<Post> posts;
+        long totalElements;
+
+        if (query.sort() == PostSort.POPULAR) {
+            posts = postRepository.findPopular(
+                    PostSpecifications.likePattern(query.q()),
+                    query.contentType(),
+                    query.genre(),
+                    query.authorId(),
+                    pageable);
+            totalElements = postRepository.count(specification);
+        } else {
+            Pageable recentPageable = PageRequest.of(page, pageSize,
+                    Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")));
+            Page<Post> postPage = postRepository.findAll(specification, recentPageable);
+            posts = postPage.getContent();
+            totalElements = postPage.getTotalElements();
+        }
+
+        var dtos = posts.stream()
                 .map(post -> {
                     Profile author = profileRepository.findById(post.getAuthorId())
                             .orElse(null);
@@ -49,12 +72,10 @@ public class PostService {
                 })
                 .toList();
 
-        return new PostPageDTO(
-                posts,
-                postPage.getTotalElements(),
-                postPage.getTotalPages(),
-                postPage.hasNext()
-        );
+        int totalPages = pageSize <= 0 ? 0 : (int) ((totalElements + pageSize - 1) / pageSize);
+        boolean hasNext = page + 1 < totalPages;
+
+        return new PostPageDTO(dtos, totalElements, totalPages, hasNext);
     }
 
     @Transactional(readOnly = true)

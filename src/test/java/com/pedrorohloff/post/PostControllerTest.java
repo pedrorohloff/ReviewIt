@@ -3,7 +3,10 @@ package com.pedrorohloff.post;
 import tools.jackson.databind.ObjectMapper;
 import com.pedrorohloff.AbstractIntegrationTest;
 import com.pedrorohloff.TestDataFactory;
+import com.pedrorohloff.like.PostLikeRepository;
 import com.pedrorohloff.post.dto.PostRequestDTO;
+import com.pedrorohloff.post.enums.ContentType;
+import com.pedrorohloff.post.enums.Genre;
 import com.pedrorohloff.profile.Profile;
 import com.pedrorohloff.profile.ProfileRepository;
 import com.pedrorohloff.profile.enums.AccountStatus;
@@ -33,6 +36,9 @@ class PostControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private ProfileRepository profileRepository;
+
+    @Autowired
+    private PostLikeRepository postLikeRepository;
 
     // ============ HAPPY PATH ============
 
@@ -94,6 +100,47 @@ class PostControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(delete("/api/v1/posts/{id}", saved.getId())
                         .requestAttr("currentUserId", author.getId()))
                 .andExpect(status().isNoContent());
+    }
+
+    // ============ FEED QUERY ============
+
+    @Test
+    void shouldFilterPostsByQueryParams() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("ctrl_filter_author"));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Book Review", ContentType.BOOK, Genre.ACTION));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Movie Review", ContentType.MOVIE, Genre.ROMANCE));
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .param("contentType", "Movie")
+                        .param("genre", "Romance"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].contentType").value("Movie"))
+                .andExpect(jsonPath("$.content[0].genre").value("Romance"));
+    }
+
+    @Test
+    void shouldSearchPostsByQuery() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("ctrl_search_author"));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Unique Searchable Title"));
+
+        mockMvc.perform(get("/api/v1/posts").param("q", "searchable"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void shouldSortPostsByPopularity() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("ctrl_popular_author"));
+        Profile liker = profileRepository.save(TestDataFactory.createProfile("ctrl_popular_liker"));
+        var lessLiked = postRepository.save(TestDataFactory.createPost(author.getId(), "Less Liked"));
+        var mostLiked = postRepository.save(TestDataFactory.createPost(author.getId(), "Most Liked"));
+        postLikeRepository.save(TestDataFactory.createPostLike(mostLiked.getId(), liker.getId()));
+
+        mockMvc.perform(get("/api/v1/posts").param("sort", "popular"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(mostLiked.getId().toString()))
+                .andExpect(jsonPath("$.content[1].id").value(lessLiked.getId().toString()));
     }
 
     // ============ BAD PATH ============
@@ -163,5 +210,23 @@ class PostControllerTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldReturn400WhenContentTypeIsInvalid() throws Exception {
+        mockMvc.perform(get("/api/v1/posts").param("contentType", "Sandwich"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenGenreIsInvalid() throws Exception {
+        mockMvc.perform(get("/api/v1/posts").param("genre", "Sandwich"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenSortIsInvalid() throws Exception {
+        mockMvc.perform(get("/api/v1/posts").param("sort", "chaos"))
+                .andExpect(status().isBadRequest());
     }
 }

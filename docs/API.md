@@ -34,12 +34,22 @@ Errors follow RFC 7807 (`ProblemDetail`):
 ### Posts
 | Method | Path | Description |
 |---|---|---|
-| GET | `/posts?page={page}&pageSize={pageSize}` | List posts (paginated) |
+| GET | `/posts?page={page}&pageSize={pageSize}` | List posts (paginated); accepts optional query params below |
 | GET | `/posts/{id}` | Get post by id |
 | POST | `/posts` | Create post |
 | PUT | `/posts/{id}` | Update post |
 | DELETE | `/posts/{id}` | Delete post |
 | PATCH | `/posts/{id}/notification-settings` | Update notification settings for post |
+
+`GET /posts` optional query params (all combinable, applied to the whole dataset):
+
+| Param | Values | Default | Notes |
+|---|---|---|---|
+| `q` | free text | – | Case-insensitive search over `title` OR `content`; `%`/`_` are escaped |
+| `contentType` | `Book` \| `Movie` \| `Album` \| `Game` | – | Invalid value → `400` |
+| `genre` | `Action` \| `Romance` \| `Horror` \| `Comedy` \| `Drama` | – | Invalid value → `400` |
+| `sort` | `recent` \| `popular` | `recent` | `recent` = `createdAt DESC`; `popular` = `likeCount DESC`, invalid value → `400` |
+| `authorId` | UUID | – | Filter posts by author |
 
 ### Comments
 | Method | Path | Description |
