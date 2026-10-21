@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 5173",
+    "start": "ng serve --port 5173 --host 0.0.0.0",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "preview": "http-server dist/frontend/browser -p 4173 -c-1",
