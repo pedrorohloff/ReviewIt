@@ -51,6 +51,10 @@ Errors follow RFC 7807 (`ProblemDetail`):
 | `sort` | `recent` \| `popular` | `recent` | `recent` = `createdAt DESC`; `popular` = `likeCount DESC`, invalid value → `400` |
 | `authorId` | UUID | – | Filter posts by author |
 
+Every `PostDTO` returned by these endpoints now carries real `likeCount`/`commentCount`
+(batched, one grouped query per page — no N+1) and `likedByMe` (derived from the JWT
+`sub`; `false` for anonymous requests).
+
 ### Comments
 | Method | Path | Description |
 |---|---|---|

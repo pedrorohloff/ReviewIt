@@ -22,7 +22,7 @@ public class PostMapper {
         this.profileMapper = profileMapper;
     }
 
-    public PostDTO toDTO(Post post, Profile author, long likeCount, long commentCount) {
+    public PostDTO toDTO(Post post, Profile author, long likeCount, long commentCount, boolean likedByMe) {
         if (post == null || author == null) {
             return null;
         }
@@ -37,6 +37,7 @@ public class PostMapper {
                 post.getNotifyChannel().getValue(),
                 likeCount,
                 commentCount,
+                likedByMe,
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

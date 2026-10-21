@@ -5,6 +5,7 @@ import com.pedrorohloff.TestDataFactory;
 import com.pedrorohloff.exception.BusinessException;
 import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
+import com.pedrorohloff.comment.CommentRepository;
 import com.pedrorohloff.like.PostLikeRepository;
 import com.pedrorohloff.post.dto.PostDTO;
 import com.pedrorohloff.post.dto.PostPageDTO;
@@ -38,6 +39,9 @@ class PostServiceTest extends AbstractIntegrationTest {
     @Autowired
     private PostLikeRepository postLikeRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
     private PostQuery recentQuery() {
         return new PostQuery(null, null, null, null, PostSort.RECENT);
     }
@@ -50,7 +54,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         postRepository.save(TestDataFactory.createPost(author.getId()));
         postRepository.save(TestDataFactory.createPost(author.getId()));
 
-        PostPageDTO result = postService.findAll(recentQuery(), 0, 10);
+        PostPageDTO result = postService.findAll(recentQuery(), 0, 10, null);
 
         assertNotNull(result);
         assertTrue(result.totalElements() >= 2);
@@ -59,7 +63,7 @@ class PostServiceTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnEmptyPageWhenNoPostsExist() {
-        PostPageDTO result = postService.findAll(recentQuery(), 0, 10);
+        PostPageDTO result = postService.findAll(recentQuery(), 0, 10, null);
 
         assertNotNull(result);
         assertEquals(0, result.totalElements());
@@ -72,7 +76,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         Profile author = profileRepository.save(TestDataFactory.createProfile("author2"));
         var saved = postRepository.save(TestDataFactory.createPost(author.getId()));
 
-        PostDTO result = postService.findById(saved.getId());
+        PostDTO result = postService.findById(saved.getId(), null);
 
         assertNotNull(result);
         assertEquals(saved.getId(), result.id());
@@ -126,7 +130,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         postRepository.save(TestDataFactory.createPost(author.getId(), "Movie Review", ContentType.MOVIE, Genre.ACTION));
 
         PostPageDTO result = postService.findAll(
-                new PostQuery(null, ContentType.MOVIE, null, null, null), 0, 10);
+                new PostQuery(null, ContentType.MOVIE, null, null, null), 0, 10, null);
 
         assertEquals(1, result.totalElements());
         assertEquals("Movie", result.content().get(0).contentType());
@@ -139,7 +143,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         postRepository.save(TestDataFactory.createPost(author.getId(), "Scary Tale", ContentType.BOOK, Genre.HORROR));
 
         PostPageDTO result = postService.findAll(
-                new PostQuery(null, null, Genre.ROMANCE, null, null), 0, 10);
+                new PostQuery(null, null, Genre.ROMANCE, null, null), 0, 10, null);
 
         assertEquals(1, result.totalElements());
         assertEquals("Romance", result.content().get(0).genre());
@@ -153,7 +157,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         postRepository.save(TestDataFactory.createPost(authorTwo.getId(), "Second Author Post"));
 
         PostPageDTO result = postService.findAll(
-                new PostQuery(null, null, null, authorOne.getId(), null), 0, 10);
+                new PostQuery(null, null, null, authorOne.getId(), null), 0, 10, null);
 
         assertEquals(1, result.totalElements());
         assertEquals(authorOne.getId(), result.content().get(0).author().id());
@@ -169,11 +173,11 @@ class PostServiceTest extends AbstractIntegrationTest {
         postRepository.save(other);
 
         PostPageDTO byTitle = postService.findAll(
-                new PostQuery("treasure", null, null, null, null), 0, 10);
+                new PostQuery("treasure", null, null, null, null), 0, 10, null);
         assertEquals(1, byTitle.totalElements());
 
         PostPageDTO byContent = postService.findAll(
-                new PostQuery("CHRONO", null, null, null, null), 0, 10);
+                new PostQuery("CHRONO", null, null, null, null), 0, 10, null);
         assertEquals(1, byContent.totalElements());
         assertEquals(other.getId(), byContent.content().get(0).id());
     }
@@ -195,7 +199,7 @@ class PostServiceTest extends AbstractIntegrationTest {
         postLikeRepository.save(TestDataFactory.createPostLike(lessLiked.getId(), likerThree.getId()));
 
         PostPageDTO result = postService.findAll(
-                new PostQuery(null, null, null, null, PostSort.POPULAR), 0, 10);
+                new PostQuery(null, null, null, null, PostSort.POPULAR), 0, 10, null);
 
         assertEquals(2, result.totalElements());
         assertEquals(mostLiked.getId(), result.content().get(0).id());
@@ -211,10 +215,47 @@ class PostServiceTest extends AbstractIntegrationTest {
                 author.getId(), "Combined Book", ContentType.BOOK, Genre.DRAMA));
 
         PostPageDTO result = postService.findAll(
-                new PostQuery(null, ContentType.MOVIE, Genre.DRAMA, author.getId(), PostSort.POPULAR), 0, 10);
+                new PostQuery(null, ContentType.MOVIE, Genre.DRAMA, author.getId(), PostSort.POPULAR), 0, 10, null);
 
         assertEquals(1, result.totalElements());
         assertEquals(movie.getId(), result.content().get(0).id());
+    }
+
+    @Test
+    void shouldReturnRealLikeAndCommentCounts() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("counts_author"));
+        Profile liker = profileRepository.save(TestDataFactory.createProfile("counts_liker"));
+        Post post = postRepository.save(TestDataFactory.createPost(author.getId(), "Counted Post"));
+
+        postLikeRepository.save(TestDataFactory.createPostLike(post.getId(), liker.getId()));
+        postLikeRepository.save(TestDataFactory.createPostLike(post.getId(), author.getId()));
+        commentRepository.save(TestDataFactory.createComment(post.getId(), liker.getId()));
+
+        PostPageDTO result = postService.findAll(recentQuery(), 0, 10, null);
+        PostDTO dto = result.content().stream()
+                .filter(item -> item.id().equals(post.getId()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(2, dto.likeCount());
+        assertEquals(1, dto.commentCount());
+    }
+
+    @Test
+    void shouldMarkLikedByMeOnlyForTheCurrentUser() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("liked_author"));
+        Profile liker = profileRepository.save(TestDataFactory.createProfile("liked_liker"));
+        Profile other = profileRepository.save(TestDataFactory.createProfile("liked_other"));
+        Post post = postRepository.save(TestDataFactory.createPost(author.getId(), "Liked Post"));
+        postLikeRepository.save(TestDataFactory.createPostLike(post.getId(), liker.getId()));
+
+        PostDTO forLiker = postService.findById(post.getId(), liker.getId());
+        PostDTO forOther = postService.findById(post.getId(), other.getId());
+        PostDTO forAnonymous = postService.findById(post.getId(), null);
+
+        assertTrue(forLiker.likedByMe());
+        assertFalse(forOther.likedByMe());
+        assertFalse(forAnonymous.likedByMe());
     }
 
     // ============ BAD PATH ============
@@ -223,7 +264,7 @@ class PostServiceTest extends AbstractIntegrationTest {
     void shouldThrowNotFoundWhenPostDoesNotExist() {
         UUID randomId = UUID.randomUUID();
 
-        assertThrows(RecordNotFoundException.class, () -> postService.findById(randomId));
+        assertThrows(RecordNotFoundException.class, () -> postService.findById(randomId, null));
     }
 
     @Test

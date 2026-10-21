@@ -36,19 +36,21 @@ public class PostController {
                                @RequestParam(required = false) String contentType,
                                @RequestParam(required = false) String genre,
                                @RequestParam(defaultValue = "recent") String sort,
-                               @RequestParam(required = false) UUID authorId) {
+                               @RequestParam(required = false) UUID authorId,
+                               @RequestAttribute(value = "currentUserId", required = false) UUID currentUserId) {
         PostQuery query = new PostQuery(
                 q,
                 contentType == null ? null : ContentType.fromValue(contentType),
                 genre == null ? null : Genre.fromValue(genre),
                 authorId,
                 PostSort.fromValue(sort));
-        return postService.findAll(query, page, pageSize);
+        return postService.findAll(query, page, pageSize, currentUserId);
     }
 
     @GetMapping("/{id}")
-    public PostDTO findById(@PathVariable @NotNull UUID id) {
-        return postService.findById(id);
+    public PostDTO findById(@PathVariable @NotNull UUID id,
+                            @RequestAttribute(value = "currentUserId", required = false) UUID currentUserId) {
+        return postService.findById(id, currentUserId);
     }
 
     @PostMapping

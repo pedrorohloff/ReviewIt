@@ -3,6 +3,7 @@ package com.pedrorohloff.post;
 import tools.jackson.databind.ObjectMapper;
 import com.pedrorohloff.AbstractIntegrationTest;
 import com.pedrorohloff.TestDataFactory;
+import com.pedrorohloff.comment.CommentRepository;
 import com.pedrorohloff.like.PostLikeRepository;
 import com.pedrorohloff.post.dto.PostRequestDTO;
 import com.pedrorohloff.post.enums.ContentType;
@@ -39,6 +40,9 @@ class PostControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private PostLikeRepository postLikeRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     // ============ HAPPY PATH ============
 
@@ -141,6 +145,38 @@ class PostControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(mostLiked.getId().toString()))
                 .andExpect(jsonPath("$.content[1].id").value(lessLiked.getId().toString()));
+    }
+
+    @Test
+    void shouldReturnRealCountsInTheFeed() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("ctrl_counts_author"));
+        Profile liker = profileRepository.save(TestDataFactory.createProfile("ctrl_counts_liker"));
+        var post = postRepository.save(TestDataFactory.createPost(author.getId(), "Counted Post"));
+        postLikeRepository.save(TestDataFactory.createPostLike(post.getId(), liker.getId()));
+        commentRepository.save(TestDataFactory.createComment(post.getId(), liker.getId()));
+
+        mockMvc.perform(get("/api/v1/posts").param("q", "Counted Post"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].likeCount").value(1))
+                .andExpect(jsonPath("$.content[0].commentCount").value(1));
+    }
+
+    @Test
+    void shouldReturnLikedByMeForCurrentUser() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("ctrl_liked_author"));
+        Profile liker = profileRepository.save(TestDataFactory.createProfile("ctrl_liked_liker"));
+        var post = postRepository.save(TestDataFactory.createPost(author.getId(), "Liked By Me Post"));
+        postLikeRepository.save(TestDataFactory.createPostLike(post.getId(), liker.getId()));
+
+        mockMvc.perform(get("/api/v1/posts/{id}", post.getId())
+                        .requestAttr("currentUserId", liker.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.likedByMe").value(true));
+
+        mockMvc.perform(get("/api/v1/posts/{id}", post.getId())
+                        .requestAttr("currentUserId", author.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.likedByMe").value(false));
     }
 
     // ============ BAD PATH ============

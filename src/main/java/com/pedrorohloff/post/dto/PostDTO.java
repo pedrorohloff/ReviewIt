@@ -16,6 +16,7 @@ public record PostDTO (
         String notifyChannel,
         long likeCount,
         long commentCount,
+        boolean likedByMe,
         Instant createdAt,
         Instant updatedAt
 ) {
