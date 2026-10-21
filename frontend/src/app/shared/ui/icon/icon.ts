@@ -12,7 +12,10 @@ export type IconName =
   | 'album'
   | 'game'
   | 'chevron-down'
-  | 'check';
+  | 'check'
+  | 'circle-check'
+  | 'triangle-alert'
+  | 'info';
 
 @Component({
   selector: 'app-icon',

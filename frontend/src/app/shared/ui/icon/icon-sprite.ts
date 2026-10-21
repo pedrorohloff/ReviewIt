@@ -87,6 +87,23 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       <symbol id="icon-check" viewBox="0 0 24 24">
         <path d="M20 6 9 17l-5-5" />
       </symbol>
+
+      <symbol id="icon-circle-check" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <path d="m9 12 2 2 4-4" />
+      </symbol>
+
+      <symbol id="icon-triangle-alert" viewBox="0 0 24 24">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </symbol>
+
+      <symbol id="icon-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </symbol>
     </svg>
   `,
 })
