@@ -13,6 +13,7 @@ Built following the `crud-angular-spring` (Loiane Groner) architectural pattern.
 - **Testcontainers** + PostgreSQL 16 for integration tests
 - **Lombok**, **springdoc-openapi** (Swagger UI), **Nimbus JOSE JWT** (Supabase JWKS validation)
 - **Maven** (with `mvnw` wrapper)
+- **Angular 22 + Tailwind CSS 4** frontend in `frontend/` (demo mode available)
 
 ## Project structure
 
@@ -73,6 +74,34 @@ sg docker -c './mvnw test'
 ```
 
 Current test suite: **133 tests**, all passing.
+
+## Running the frontend
+
+The Angular app lives in `frontend/`. Node.js 22+ and npm 10+ are required.
+
+```bash
+cd frontend
+npm install
+
+# Local development file (gitignored). Blank Supabase values keep demo mode on.
+cp src/environments/environment.development.example.ts \
+   src/environments/environment.development.ts
+
+npm start
+```
+
+The dev server runs at `http://localhost:5173` and proxies `/api` to the backend at
+`http://localhost:8080`. The current feed uses local fixtures and does not require
+the backend to be running.
+
+```bash
+npm test          # Vitest unit tests
+npm run lint      # Angular ESLint
+npm run build     # production build in dist/frontend/browser
+npm run e2e       # Playwright desktop + mobile (install Chromium once)
+```
+
+See `frontend/README.md` and `docs/API.md` for details.
 
 ## Database schema (Supabase setup)
 
