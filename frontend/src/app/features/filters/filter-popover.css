@@ -12,7 +12,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 20px;
-  border: 1.5px solid var(--color-olive);
+  border: 1.5px solid var(--color-border-strong);
   border-radius: 22px;
   background: var(--color-surface);
   box-shadow: var(--shadow-popover);
@@ -28,7 +28,7 @@
 
 .filter-popover__eyebrow {
   margin: 0 0 2px;
-  color: var(--color-olive);
+  color: var(--color-muted);
   font-size: 10.5px;
   font-weight: 650;
   letter-spacing: 0.12em;
@@ -37,7 +37,7 @@
 
 .filter-popover h2 {
   margin: 0;
-  color: var(--color-olive);
+  color: var(--color-ink-strong);
   font-family: var(--font-display);
   font-size: 26px;
   font-weight: 600;
@@ -52,12 +52,12 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 999px;
-  color: var(--color-olive);
+  color: var(--color-ink);
   transition: background-color 120ms ease-out;
 }
 
 .icon-button:hover {
-  background: var(--color-cream);
+  background: var(--color-surface-muted);
 }
 
 .filter-popover__group + .filter-popover__group {
@@ -66,7 +66,7 @@
 
 .filter-popover__label {
   margin: 0 0 8px;
-  color: var(--color-olive);
+  color: var(--color-muted);
   font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.08em;
@@ -85,7 +85,7 @@
   gap: 5px;
   height: 34px;
   padding: 0 13px;
-  border: 1px solid var(--color-almond);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   background: transparent;
   color: var(--color-ink);
@@ -97,13 +97,13 @@
 }
 
 .chip:hover {
-  background: rgba(255, 232, 214, 0.7);
+  background: var(--color-surface-muted);
 }
 
 .chip.is-active {
-  border-color: var(--color-sage-deep);
-  background: var(--color-sage);
-  color: var(--color-ink-strong);
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-surface);
   font-weight: 600;
 }
 
@@ -114,21 +114,21 @@
   gap: 12px;
   margin-top: 20px;
   padding-top: 14px;
-  border-top: 1px solid var(--color-almond);
+  border-top: 1px solid var(--color-border);
 }
 
 .filter-popover__hint {
   margin: 0;
-  color: var(--color-olive);
+  color: var(--color-muted);
   font-size: 11.5px;
 }
 
 .clear-button {
-  color: var(--color-olive);
+  color: var(--color-ink);
   font-size: 12px;
   font-weight: 650;
   text-decoration: underline;
-  text-decoration-color: var(--color-sage-deep);
+  text-decoration-color: var(--color-border-strong);
   text-underline-offset: 3px;
 }
 

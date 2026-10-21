@@ -50,7 +50,7 @@
 @media (max-width: 1023px) {
   .feed-panel {
     padding: 4px 16px;
-    scrollbar-color: var(--color-sage-deep) transparent;
+    scrollbar-color: var(--color-muted) transparent;
     scrollbar-width: thin;
   }
 
@@ -61,7 +61,7 @@
 
   .feed-panel::-webkit-scrollbar-thumb {
     border-radius: 999px;
-    background: var(--color-sage-deep);
+    background: var(--color-muted);
   }
 }
 

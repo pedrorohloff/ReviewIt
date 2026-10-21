@@ -79,9 +79,9 @@
 .skeleton__line {
   background: linear-gradient(
     90deg,
-    rgba(255, 232, 214, 0.7) 25%,
-    rgba(221, 190, 169, 0.65) 50%,
-    rgba(255, 232, 214, 0.7) 75%
+    rgba(241, 236, 227, 0.9) 25%,
+    rgba(222, 214, 201, 0.85) 50%,
+    rgba(241, 236, 227, 0.9) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;

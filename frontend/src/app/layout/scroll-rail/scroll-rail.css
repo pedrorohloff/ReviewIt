@@ -26,7 +26,7 @@
   left: 50%;
   width: 6px;
   border-radius: 999px;
-  background: var(--color-olive);
+  background: var(--color-muted);
   transition:
     height 70ms linear,
     transform 70ms linear;

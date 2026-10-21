@@ -1,7 +1,7 @@
 :host {
   display: block;
   min-height: 100dvh;
-  background: var(--color-cream);
+  background: var(--color-page);
 }
 
 .shell {
@@ -11,7 +11,7 @@
   width: 100%;
   height: 100dvh;
   padding: 20px;
-  background: var(--color-cream);
+  background: var(--color-page);
 }
 
 .shell__main {

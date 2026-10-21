@@ -32,23 +32,23 @@
   align-items: center;
   height: 23px;
   padding: 0 9px;
-  border: 1px solid var(--color-almond);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(255, 232, 214, 0.38);
+  background: var(--color-surface-muted);
   color: var(--color-ink);
   font-weight: 500;
   white-space: nowrap;
 }
 
 .meta-chip--type {
-  border-color: var(--color-sage-deep);
-  background: rgba(183, 183, 164, 0.32);
+  border-color: var(--color-border-strong);
+  background: var(--color-border);
   font-weight: 600;
 }
 
 .card__time {
   margin-left: auto;
-  color: var(--color-olive);
+  color: var(--color-muted);
   white-space: nowrap;
 }
 
@@ -56,7 +56,7 @@
   display: -webkit-box;
   overflow: hidden;
   margin: 10px 0 8px;
-  color: var(--color-olive);
+  color: var(--color-ink-strong);
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
@@ -93,7 +93,7 @@
   align-items: center;
   gap: 14px;
   margin-top: 15px;
-  color: var(--color-olive);
+  color: var(--color-muted);
   font-size: 12px;
 }
 
@@ -108,7 +108,7 @@
   align-items: center;
   gap: 6px;
   margin-left: auto;
-  color: var(--color-olive);
+  color: var(--color-ink);
   font-size: 12px;
   font-weight: 650;
 }

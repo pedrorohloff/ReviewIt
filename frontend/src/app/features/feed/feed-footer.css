@@ -14,7 +14,7 @@
   height: 1px;
   min-width: 12px;
   flex: 1 1 0;
-  background: var(--color-almond);
+  background: var(--color-border);
 }
 
 .feed-end__content {
@@ -24,7 +24,7 @@
 
 .feed-end__eyebrow {
   margin: 0 0 3px;
-  color: var(--color-olive);
+  color: var(--color-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -33,7 +33,7 @@
 
 .feed-end__copy {
   margin: 0;
-  color: var(--color-olive);
+  color: var(--color-muted);
   font-size: 12px;
 }
 

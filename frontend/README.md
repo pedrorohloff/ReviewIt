@@ -1,8 +1,8 @@
 # ReviewIt — frontend
 
 Angular 22 + Tailwind CSS 4 frontend for ReviewIt. The UI is in Brazilian
-Portuguese and uses the six-color editorial palette defined in
-`src/styles/tokens.css`.
+Portuguese and uses a neutral white / off-white / light-cream palette with
+editorial accents, defined in `src/styles/tokens.css`.
 
 ## Requirements
 
