@@ -1,0 +1,115 @@
+import { TestBed } from '@angular/core/testing';
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+  provideRouter,
+} from '@angular/router';
+import { Role } from '@app/core/models/profile';
+import { authGuard } from './auth.guard';
+import { roleGuard } from './role.guard';
+import { AuthService } from './auth.service';
+
+interface AuthStub {
+  isDemo: () => boolean;
+  isAuthenticated: () => boolean;
+  role: () => Role | null;
+}
+
+function configure(auth: AuthStub): Router {
+  TestBed.configureTestingModule({
+    providers: [provideRouter([]), { provide: AuthService, useValue: auth }],
+  });
+
+  return TestBed.inject(Router);
+}
+
+function routeWith(data: Record<string, unknown> = {}): ActivatedRouteSnapshot {
+  return { data } as unknown as ActivatedRouteSnapshot;
+}
+
+function stateWith(url: string): RouterStateSnapshot {
+  return { url } as RouterStateSnapshot;
+}
+
+describe('authGuard', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('allows demo mode without a backend session', () => {
+    configure({ isDemo: () => true, isAuthenticated: () => false, role: () => null });
+
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard(routeWith(), stateWith('/new')),
+    );
+
+    expect(result).toBe(true);
+  });
+
+  it('redirects to /login carrying the attempted url', () => {
+    const router = configure({
+      isDemo: () => false,
+      isAuthenticated: () => false,
+      role: () => null,
+    });
+
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard(routeWith(), stateWith('/new')),
+    );
+
+    expect(result).toBeInstanceOf(UrlTree);
+    expect(router.serializeUrl(result as UrlTree)).toBe('/login?next=%2Fnew');
+  });
+
+  it('allows an authenticated visitor', () => {
+    configure({ isDemo: () => false, isAuthenticated: () => true, role: () => 'Regular' });
+
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard(routeWith(), stateWith('/new')),
+    );
+
+    expect(result).toBe(true);
+  });
+});
+
+describe('roleGuard', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('allows a matching role', () => {
+    configure({ isDemo: () => false, isAuthenticated: () => true, role: () => 'Admin' });
+
+    const result = TestBed.runInInjectionContext(() =>
+      roleGuard(routeWith({ roles: ['Admin'] satisfies Role[] }), stateWith('/moderation')),
+    );
+
+    expect(result).toBe(true);
+  });
+
+  it('redirects insufficient roles to the 403 page', () => {
+    const router = configure({
+      isDemo: () => false,
+      isAuthenticated: () => true,
+      role: () => 'Regular',
+    });
+
+    const result = TestBed.runInInjectionContext(() =>
+      roleGuard(routeWith({ roles: ['Admin', 'Moderator'] }), stateWith('/moderation')),
+    );
+
+    expect(router.serializeUrl(result as UrlTree)).toBe('/403');
+  });
+
+  it('sends unauthenticated visitors to /login', () => {
+    const router = configure({
+      isDemo: () => false,
+      isAuthenticated: () => false,
+      role: () => null,
+    });
+
+    const result = TestBed.runInInjectionContext(() =>
+      roleGuard(routeWith({ roles: ['Admin'] }), stateWith('/moderation')),
+    );
+
+    expect(router.serializeUrl(result as UrlTree)).toBe('/login?next=%2Fmoderation');
+  });
+});
