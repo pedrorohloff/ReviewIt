@@ -1,0 +1,61 @@
+<div
+  class="comment-list"
+  [attr.aria-busy]="status() === 'loading' || isLoadingMore() ? 'true' : null"
+>
+  @if (status() === 'loading') {
+    <div class="comment-list__skeleton" role="status">
+      <span class="sr-only">Carregando comentários…</span>
+      @for (row of skeletonRows; track row) {
+        <div class="comment-skeleton" aria-hidden="true">
+          <span class="comment-skeleton__avatar"></span>
+          <div class="comment-skeleton__body">
+            <span class="comment-skeleton__line comment-skeleton__line--author"></span>
+            <span class="comment-skeleton__line"></span>
+            <span class="comment-skeleton__line comment-skeleton__line--medium"></span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (status() === 'error') {
+    <div class="comment-list__state" role="alert">
+      <p class="comment-list__copy">{{ errorMessage() }}</p>
+      <button type="button" class="comment-list__action" (click)="retry()">
+        Tentar novamente
+      </button>
+    </div>
+  } @else if (comments().length === 0) {
+    <p class="comment-list__empty">Nenhum comentário ainda. Comece a conversa.</p>
+  } @else {
+    <ul class="comment-list__items">
+      @for (comment of comments(); track comment.id) {
+        <li>
+          <app-comment-item
+            [comment]="comment"
+            [canDelete]="comment.author.id === currentUserId()"
+            [pending]="isPending(comment)"
+            (like)="toggleLike(comment)"
+            (remove)="remove.emit(comment)"
+          />
+        </li>
+      }
+    </ul>
+
+    @if (status() === 'errorMore') {
+      <div class="comment-list__state" role="alert">
+        <p class="comment-list__copy">{{ errorMessage() }}</p>
+        <button type="button" class="comment-list__action" (click)="retry()">
+          Tentar novamente
+        </button>
+      </div>
+    } @else if (hasNext()) {
+      <button
+        type="button"
+        class="comment-list__more"
+        [disabled]="isLoadingMore()"
+        (click)="loadMore()"
+      >
+        {{ isLoadingMore() ? 'Carregando…' : 'Carregar mais comentários' }}
+      </button>
+    }
+  }
+</div>

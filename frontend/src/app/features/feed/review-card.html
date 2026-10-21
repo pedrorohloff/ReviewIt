@@ -44,14 +44,16 @@
         <span>{{ post().likeCount }}</span>
       </button>
 
-      <span class="stat">
+      <a
+        class="stat stat--link"
+        [routerLink]="['/posts', post().id]"
+        fragment="comments"
+        [state]="{ fromFeed: true }"
+        [attr.aria-label]="commentLabel()"
+      >
         <app-icon name="message" [size]="16" />
-        <span class="sr-only">
-          {{ post().commentCount }}
-          {{ post().commentCount === 1 ? 'comentário' : 'comentários' }}
-        </span>
-        <span aria-hidden="true">{{ post().commentCount }}</span>
-      </span>
+        <span>{{ post().commentCount }}</span>
+      </a>
 
       <span class="read-more">
         ler mais

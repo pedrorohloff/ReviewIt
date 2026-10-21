@@ -136,6 +136,22 @@
   color: var(--color-danger);
 }
 
+.stat--link {
+  position: relative;
+  z-index: 1;
+  margin: -0.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-chip);
+  transition:
+    color 120ms ease-out,
+    background-color 120ms ease-out;
+}
+
+.stat--link:hover {
+  color: var(--color-ink-strong);
+  background: var(--color-surface-muted);
+}
+
 .read-more {
   display: inline-flex;
   align-items: center;

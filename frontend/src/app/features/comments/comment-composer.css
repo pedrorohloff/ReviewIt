@@ -1,0 +1,91 @@
+.composer {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.composer__main {
+  min-width: 0;
+}
+
+.composer__field {
+  display: block;
+  width: 100%;
+  min-height: 4.5rem;
+  max-height: 12rem;
+  padding: 0.625rem 0.75rem;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  resize: vertical;
+  field-sizing: content;
+  transition: border-color 120ms ease-out;
+}
+
+.composer__field::placeholder {
+  color: var(--color-muted);
+}
+
+.composer__field:hover:not(:disabled) {
+  border-color: var(--color-border);
+}
+
+.composer__field:focus-visible {
+  border-color: var(--color-ink);
+  outline-offset: 0;
+}
+
+.composer__field:disabled {
+  background: var(--color-surface-muted);
+  cursor: not-allowed;
+}
+
+.composer__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.composer__hint {
+  color: var(--color-muted);
+  font-size: 0.71875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.composer__hint--error {
+  color: var(--color-danger);
+}
+
+.composer__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 0.78125rem;
+  font-weight: 650;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    opacity 120ms ease-out;
+}
+
+.composer__submit:hover:not(:disabled) {
+  border-color: var(--color-ink-strong);
+  background: var(--color-ink-strong);
+}
+
+.composer__submit:disabled {
+  cursor: default;
+  opacity: 0.45;
+}

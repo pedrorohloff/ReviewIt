@@ -31,12 +31,15 @@ function setup(api: {
   getPost: (id: string) => Observable<Post>;
   togglePostLike?: (id: string) => Observable<LikeResult>;
 }) {
+  const emptyComments = { comments: [], totalElements: 0, totalPages: 0, hasNext: false };
+
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
       {
         provide: REVIEW_API,
         useValue: {
+          listComments: () => of(emptyComments),
           togglePostLike: () => of({ liked: true, likeCount: 149 }),
           ...api,
         } as unknown as ReviewApi,
@@ -72,6 +75,8 @@ describe('PostDetailPage', () => {
     expect(text(fixture)).toContain('maria');
     expect(element.querySelector('.review__body')?.textContent).toContain('Primeira linha.');
     expect(TestBed.inject(Title).getTitle()).toBe('A casa que aprendi a habitar · ReviewIt');
+    expect(text(fixture)).toContain('Comentários (0)');
+    expect(text(fixture)).toContain('Nenhum comentário ainda');
   });
 
   it('shows a friendly state for a missing review', async () => {

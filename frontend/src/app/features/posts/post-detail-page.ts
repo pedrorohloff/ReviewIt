@@ -7,22 +7,30 @@ import {
   effect,
   inject,
   input,
+  signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
-import { Avatar } from '@app/shared/ui/avatar/avatar';
-import { Icon } from '@app/shared/ui/icon/icon';
+import { toApiError } from '@app/core/api/api-error';
+import { Comment } from '@app/core/models/comment';
+import { ToasterService } from '@app/core/services/toaster.service';
+import { CommentComposer } from '@app/features/comments/comment-composer';
+import { CommentList } from '@app/features/comments/comment-list';
+import { CommentStore } from '@app/features/comments/comment-store';
+import { LikeService } from '@app/features/likes/like.service';
 import { RelativeTimePipe } from '@app/shared/pipes/relative-time-pipe';
 import { DateFormatPipe } from '@app/shared/pipes/date-format-pipe';
-import { ToasterService } from '@app/core/services/toaster.service';
-import { LikeService } from '@app/features/likes/like.service';
+import { Avatar } from '@app/shared/ui/avatar/avatar';
+import { ConfirmDialog } from '@app/shared/ui/confirm-dialog/confirm-dialog';
+import { Icon } from '@app/shared/ui/icon/icon';
 import { contentTypeLabel, genreLabel } from '@app/shared/utils/format';
 import { PostStore } from './post-store';
 
 /**
- * The full review: header, body and (in the next commit) comments.
+ * The full review: header, body and comments.
  *
  * The panel owns the scroll of this route, like the feed panel does, so the
  * page never scrolls the document. Leaving restores the feed via
@@ -32,12 +40,14 @@ import { PostStore } from './post-store';
 @Component({
   selector: 'app-post-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Avatar, DateFormatPipe, Icon, RelativeTimePipe, RouterLink],
+  imports: [Avatar, CommentComposer, CommentList, ConfirmDialog, DateFormatPipe, Icon, RelativeTimePipe, RouterLink],
+  providers: [CommentStore],
   templateUrl: './post-detail-page.html',
   styleUrl: './post-detail-page.css',
 })
 export class PostDetailPage {
   private readonly store = inject(PostStore);
+  private readonly comments = inject(CommentStore);
   private readonly likes = inject(LikeService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -49,6 +59,7 @@ export class PostDetailPage {
   readonly id = input.required<string>();
 
   protected readonly panel = viewChild<ElementRef<HTMLElement>>('detailPanel');
+  protected readonly commentsSection = viewChild<ElementRef<HTMLElement>>('commentsSection');
 
   protected readonly post = this.store.post;
   protected readonly status = this.store.status;
@@ -71,11 +82,24 @@ export class PostDetailPage {
     const action = post.likedByMe ? 'Remover curtida' : 'Curtir';
     return `${action} · ${post.likeCount} ${post.likeCount === 1 ? 'curtida' : 'curtidas'}`;
   });
+  protected readonly commentCount = computed(() =>
+    this.comments.loaded() ? this.comments.total() : (this.post()?.commentCount ?? 0),
+  );
+
+  protected readonly pendingDelete = signal<Comment | null>(null);
+  protected readonly deleting = signal(false);
+
+  private fragmentScrolled = false;
 
   constructor() {
     effect(() => {
       const id = this.id();
-      this.store.load(id);
+      // The stores write signals; running them untracked keeps this effect on
+      // the route parameter alone.
+      untracked(() => {
+        this.store.load(id);
+        this.comments.load(id);
+      });
     });
 
     effect(() => {
@@ -83,6 +107,25 @@ export class PostDetailPage {
       if (post) {
         this.title.setTitle(`${post.title} · ReviewIt`);
       }
+    });
+
+    // `/posts/:id#comments` must scroll the panel, not the document. Waiting
+    // for the first page means the panel already has its final height; the
+    // guard keeps likes and edits from scrolling the reader again.
+    effect(() => {
+      const loaded = this.comments.loaded();
+      const section = this.commentsSection();
+
+      if (!loaded || !section || this.fragmentScrolled) {
+        return;
+      }
+
+      if (this.document.location.hash !== '#comments') {
+        return;
+      }
+
+      this.fragmentScrolled = true;
+      section.nativeElement.scrollIntoView({ block: 'start' });
     });
   }
 
@@ -109,6 +152,39 @@ export class PostDetailPage {
 
   protected retry(): void {
     this.store.retry();
+  }
+
+  protected askRemove(comment: Comment): void {
+    this.pendingDelete.set(comment);
+  }
+
+  protected cancelRemove(): void {
+    if (!this.deleting()) {
+      this.pendingDelete.set(null);
+    }
+  }
+
+  protected confirmRemove(): void {
+    const comment = this.pendingDelete();
+
+    if (!comment) {
+      return;
+    }
+
+    this.deleting.set(true);
+
+    this.comments.remove(comment).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.pendingDelete.set(null);
+        this.toaster.success('Comentário removido.');
+      },
+      error: (error: unknown) => {
+        this.deleting.set(false);
+        this.pendingDelete.set(null);
+        this.toaster.error(toApiError(error).message);
+      },
+    });
   }
 
   protected goBack(): void {

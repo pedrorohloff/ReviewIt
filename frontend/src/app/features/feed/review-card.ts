@@ -23,6 +23,10 @@ export class ReviewCard {
   protected readonly typeLabel = computed(() => contentTypeLabel(this.post().contentType));
   protected readonly genreLabel = computed(() => genreLabel(this.post().genre));
   protected readonly linkLabel = computed(() => `Ler review: ${this.post().title}`);
+  protected readonly commentLabel = computed(() => {
+    const post = this.post();
+    return `Comentários · ${post.commentCount} ${post.commentCount === 1 ? 'comentário' : 'comentários'}`;
+  });
   protected readonly likeLabel = computed(() => {
     const post = this.post();
     const action = post.likedByMe ? 'Remover curtida' : 'Curtir';

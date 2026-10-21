@@ -1,0 +1,49 @@
+<article class="comment" [class.comment--pending]="pending()">
+  <app-avatar [name]="comment().author.username" [url]="comment().author.avatarUrl" [size]="32" />
+
+  <div class="comment__main">
+    <header class="comment__head">
+      <span class="comment__author">{{ comment().author.username }}</span>
+      <time class="comment__time" [attr.datetime]="comment().createdAt">
+        {{ comment().createdAt | relativeTime }}
+      </time>
+      @if (pending()) {
+        <span class="comment__pending">Enviando…</span>
+      }
+    </header>
+
+    <p class="comment__body">{{ comment().content }}</p>
+
+    <footer class="comment__foot">
+      <button
+        type="button"
+        class="comment__action"
+        [class.comment__action--on]="comment().likedByMe"
+        [attr.aria-pressed]="comment().likedByMe ? 'true' : 'false'"
+        [attr.aria-label]="likeLabel()"
+        [disabled]="pending()"
+        (click)="like.emit()"
+      >
+        <app-icon
+          name="heart"
+          [size]="15"
+          [strokeWidth]="comment().likedByMe ? 2.25 : 1.75"
+          [filled]="!!comment().likedByMe"
+        />
+        <span>{{ comment().likeCount }}</span>
+      </button>
+
+      @if (canDelete()) {
+        <button
+          type="button"
+          class="comment__action"
+          [disabled]="pending()"
+          (click)="remove.emit()"
+        >
+          <app-icon name="trash" [size]="14" />
+          Remover
+        </button>
+      }
+    </footer>
+  </div>
+</article>

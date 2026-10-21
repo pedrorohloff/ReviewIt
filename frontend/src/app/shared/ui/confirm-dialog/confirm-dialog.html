@@ -1,0 +1,37 @@
+<div class="scrim" aria-hidden="true" (click)="cancel()"></div>
+
+<div
+  #dialog
+  class="dialog"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-labelledby]="titleId"
+  [attr.aria-describedby]="message() ? titleId + '-message' : null"
+  tabindex="-1"
+  (keydown)="onKeydown($event)"
+>
+  <h2 class="dialog__title" [id]="titleId">{{ title() }}</h2>
+
+  @if (message()) {
+    <p class="dialog__message" [id]="titleId + '-message'">{{ message() }}</p>
+  }
+
+  <div class="dialog__content">
+    <ng-content />
+  </div>
+
+  <footer class="dialog__actions">
+    <button type="button" class="btn btn--ghost" [disabled]="busy()" (click)="cancel()">
+      {{ cancelLabel() }}
+    </button>
+
+    <button
+      type="button"
+      [class]="confirmClass()"
+      [disabled]="busy() || confirmDisabled()"
+      (click)="confirm()"
+    >
+      {{ busy() ? busyLabel() : confirmLabel() }}
+    </button>
+  </footer>
+</div>

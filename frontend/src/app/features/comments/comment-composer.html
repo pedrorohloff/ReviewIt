@@ -1,0 +1,33 @@
+<form class="composer" (submit)="submit($event)">
+  <app-avatar
+    [name]="user()?.username ?? 'Visitante'"
+    [url]="user()?.avatarUrl ?? null"
+    [size]="32"
+  />
+
+  <div class="composer__main">
+    <label class="sr-only" for="comment-content">Escreva um comentário</label>
+    <textarea
+      id="comment-content"
+      class="composer__field"
+      rows="3"
+      [value]="draft()"
+      [attr.maxlength]="maxLength"
+      [attr.placeholder]="placeholder()"
+      [disabled]="!signedIn() || pending()"
+      (input)="onInput($event)"
+    ></textarea>
+
+    <div class="composer__foot">
+      <span class="composer__hint" [class.composer__hint--error]="error()">
+        {{ error() ?? counter() }}
+      </span>
+
+      @if (signedIn()) {
+        <button type="submit" class="composer__submit" [disabled]="!canSubmit()">
+          {{ pending() ? 'Enviando…' : 'Comentar' }}
+        </button>
+      }
+    </div>
+  </div>
+</form>

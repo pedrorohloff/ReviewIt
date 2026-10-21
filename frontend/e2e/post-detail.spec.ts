@@ -76,6 +76,77 @@ test.describe('post detail', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Reviews' })).toBeVisible();
   });
 
+  test('adds, likes and removes a comment', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    await clickVisibleCard(page);
+    await expect(page.locator('.detail-panel')).toBeVisible();
+    await expect(page.locator('#comments-title')).toBeVisible();
+
+    const heading = page.locator('#comments-title');
+    const initial = Number((await heading.textContent())?.match(/\d+/)?.[0] ?? 0);
+    const body = 'Comentário criado pelo teste e2e.';
+
+    await page.getByLabel('Escreva um comentário').fill(body);
+    await page.getByRole('button', { name: 'Comentar', exact: true }).click();
+
+    await expect(page.getByText(body)).toBeVisible();
+    await expect(heading).toHaveText(`Comentários (${initial + 1})`);
+
+    const item = page.locator('app-comment-item', { hasText: body });
+    const like = item.getByRole('button', { name: /curtida/ });
+
+    await expect(like).toHaveAttribute('aria-pressed', 'false');
+    await like.click();
+    await expect(like).toHaveAttribute('aria-pressed', 'true');
+
+    await item.getByRole('button', { name: 'Remover', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Remover comentário' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Remover' }).click();
+
+    await expect(page.getByText(body)).toHaveCount(0);
+    await expect(heading).toHaveText(`Comentários (${initial})`);
+  });
+
+  test('opens the comments from the card counter', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    await page.locator('app-review-card .stat--link').first().click();
+    await expect(page.locator('.detail-panel')).toBeVisible();
+    await expect(page.locator('#comments-title')).toBeVisible();
+
+    const panel = page.locator('.detail-panel');
+    await expect.poll(async () => panel.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+
+    const section = await page.locator('#comments').boundingBox();
+    const viewport = await panel.boundingBox();
+    expect(section).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    expect(section!.y - viewport!.y).toBeLessThan(40);
+  });
+
+  test('keeps the comment composer disabled while empty', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    await clickVisibleCard(page);
+    await expect(page.locator('.detail-panel')).toBeVisible();
+
+    await expect(page.getByRole('button', { name: 'Comentar', exact: true })).toBeDisabled();
+
+    await page.getByLabel('Escreva um comentário').fill('   ');
+    await expect(page.getByRole('button', { name: 'Comentar', exact: true })).toBeDisabled();
+  });
+
   test('keeps the review body readable and preserves line breaks', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
 

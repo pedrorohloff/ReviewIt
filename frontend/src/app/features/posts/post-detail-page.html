@@ -96,6 +96,30 @@
 
         <p class="review__body">{{ post.content }}</p>
       </article>
+
+      <section
+        #commentsSection
+        id="comments"
+        class="comments"
+        aria-labelledby="comments-title"
+      >
+        <h2 id="comments-title" class="comments__title">Comentários ({{ commentCount() }})</h2>
+
+        <app-comment-composer />
+        <app-comment-list (remove)="askRemove($event)" />
+      </section>
+    }
+
+    @if (pendingDelete(); as comment) {
+      <app-confirm-dialog
+        title="Remover comentário"
+        message="O comentário de {{ comment.author.username }} será apagado. Esta ação não pode ser desfeita."
+        confirmLabel="Remover"
+        busyLabel="Removendo…"
+        [busy]="deleting()"
+        (confirmed)="confirmRemove()"
+        (cancelled)="cancelRemove()"
+      />
     }
   </div>
 </section>
