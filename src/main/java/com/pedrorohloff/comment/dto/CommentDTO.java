@@ -11,6 +11,7 @@ public record CommentDTO(
         ProfileSummaryDTO author,
         String content,
         long likeCount,
+        boolean likedByMe,
         Instant createdAt,
         Instant updatedAt
 ) {}

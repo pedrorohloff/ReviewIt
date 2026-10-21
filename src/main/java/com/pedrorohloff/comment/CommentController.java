@@ -24,13 +24,15 @@ public class CommentController {
     @GetMapping("/api/v1/posts/{postId}/comments")
     public CommentPageDTO findAllByPost(@PathVariable @NotNull UUID postId,
                                         @RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "10") int pageSize) {
-        return commentService.findAllByPost(postId, page, pageSize);
+                                        @RequestParam(defaultValue = "10") int pageSize,
+                                        @RequestAttribute(value = "currentUserId", required = false) UUID currentUserId) {
+        return commentService.findAllByPost(postId, page, pageSize, currentUserId);
     }
 
     @GetMapping("/api/v1/comments/{id}")
-    public CommentDTO findById(@PathVariable @NotNull UUID id) {
-        return commentService.findById(id);
+    public CommentDTO findById(@PathVariable @NotNull UUID id,
+                               @RequestAttribute(value = "currentUserId", required = false) UUID currentUserId) {
+        return commentService.findById(id, currentUserId);
     }
 
     @PostMapping("/api/v1/posts/{postId}/comments")

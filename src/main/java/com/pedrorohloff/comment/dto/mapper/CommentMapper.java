@@ -31,7 +31,7 @@ public class CommentMapper {
         return comment;
     }
 
-    public CommentDTO toDTO(Comment comment, Profile author, long likeCount) {
+    public CommentDTO toDTO(Comment comment, Profile author, long likeCount, boolean likedByMe) {
         if (comment == null) {
             return null;
         }
@@ -41,6 +41,7 @@ public class CommentMapper {
                 profileMapper.toSummaryDTO(author),
                 comment.getContent(),
                 likeCount,
+                likedByMe,
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
         );

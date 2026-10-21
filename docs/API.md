@@ -64,6 +64,11 @@ Every `PostDTO` returned by these endpoints now carries real `likeCount`/`commen
 | PUT | `/comments/{id}` | Update comment |
 | DELETE | `/comments/{id}` | Delete comment |
 
+Comments are ordered oldest first (`createdAt`, then `id`) so pages are stable. Every
+`CommentDTO` now carries real `likeCount` (batched per page) and `likedByMe` (from the
+JWT `sub`; `false` for anonymous requests). `GET /posts/{id}` exposes the same real
+`commentCount` that this list totals.
+
 ### Likes
 | Method | Path | Description |
 |---|---|---|

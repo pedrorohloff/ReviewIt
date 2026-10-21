@@ -4,6 +4,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.pedrorohloff.AbstractIntegrationTest;
 import com.pedrorohloff.TestDataFactory;
 import com.pedrorohloff.comment.dto.CommentRequestDTO;
+import com.pedrorohloff.like.CommentLikeRepository;
 import com.pedrorohloff.post.Post;
 import com.pedrorohloff.post.PostRepository;
 import com.pedrorohloff.profile.Profile;
@@ -40,6 +41,9 @@ class CommentControllerTest extends AbstractIntegrationTest {
     @Autowired
     private ProfileRepository profileRepository;
 
+    @Autowired
+    private CommentLikeRepository commentLikeRepository;
+
     // ============ HAPPY PATH ============
 
     @Test
@@ -54,6 +58,34 @@ class CommentControllerTest extends AbstractIntegrationTest {
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
+    }
+
+    @Test
+    void shouldReturnLikedByMeForCurrentUser() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("commenter_liked"));
+        Profile viewer = profileRepository.save(TestDataFactory.createProfile("commenter_viewer"));
+        Post post = postRepository.save(TestDataFactory.createPost(author.getId()));
+        Comment comment = commentRepository.save(TestDataFactory.createComment(post.getId(), author.getId()));
+        commentLikeRepository.save(TestDataFactory.createCommentLike(comment.getId(), viewer.getId()));
+
+        mockMvc.perform(get("/api/v1/posts/{postId}/comments", post.getId())
+                        .requestAttr("currentUserId", viewer.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.comments[0].likeCount").value(1))
+                .andExpect(jsonPath("$.comments[0].likedByMe").value(true));
+    }
+
+    @Test
+    void shouldReturnAnonymousCommentListWithoutViewerLikes() throws Exception {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("commenter_anonymous"));
+        Post post = postRepository.save(TestDataFactory.createPost(author.getId()));
+        Comment comment = commentRepository.save(TestDataFactory.createComment(post.getId(), author.getId()));
+        commentLikeRepository.save(TestDataFactory.createCommentLike(comment.getId(), author.getId()));
+
+        mockMvc.perform(get("/api/v1/posts/{postId}/comments", post.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.comments[0].likeCount").value(1))
+                .andExpect(jsonPath("$.comments[0].likedByMe").value(false));
     }
 
     @Test
