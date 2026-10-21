@@ -90,6 +90,20 @@ test.describe('feed shell', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Reviews' })).toBeVisible();
   });
 
+  test('hydrates filters from a deep link and ignores invalid values', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+
+    await page.goto('/?type=Book&genre=Drama&sort=popular');
+    await expect(page.locator('app-review-card')).toHaveCount(1);
+    await expect(
+      page.getByRole('button', { name: 'Filtro, 2 filtros ativos' }),
+    ).toBeVisible();
+
+    await page.goto('/?type=Banana&genre=Aventura&sort=aleatorio');
+    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.getByRole('button', { name: 'Filtro', exact: true })).toBeVisible();
+  });
+
   test('keeps the custom rail in sync with the panel', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
     await page.goto('/');
