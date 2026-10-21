@@ -1,7 +1,6 @@
 :host {
   display: block;
   min-height: 100dvh;
-  padding: 16px;
   background: var(--color-cream);
 }
 
@@ -10,9 +9,7 @@
   grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
   width: 100%;
-  max-width: 1240px;
-  height: calc(100dvh - 32px);
-  margin-inline: auto;
+  height: 100dvh;
   padding: 20px;
   background: var(--color-cream);
 }
@@ -22,24 +19,14 @@
 }
 
 @media (max-width: 1023px) {
-  :host {
-    padding: 12px;
-  }
-
   .shell {
-    height: calc(100dvh - 24px);
     gap: 14px;
     padding: 16px;
   }
 }
 
 @media (max-width: 639px) {
-  :host {
-    padding: 8px;
-  }
-
   .shell {
-    height: calc(100dvh - 16px);
     gap: 12px;
     padding: 12px;
   }

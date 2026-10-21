@@ -10,6 +10,25 @@ test.describe('feed shell', () => {
     await expect(page.getByLabel('Pesquisar reviews')).toBeVisible();
     await expect(page.locator('app-review-card')).toHaveCount(8);
     await expect(page.locator('app-feed-skeleton')).toHaveCount(0);
+
+    const viewport = page.viewportSize()!;
+    const avatar = page.locator('app-top-bar').getByRole('img', { name: 'Foto de Maria Rohls' });
+    await expect(avatar).toBeVisible();
+
+    const avatarBox = await avatar.boundingBox();
+    expect(avatarBox).not.toBeNull();
+    expect(avatarBox!.x + avatarBox!.width).toBeLessThanOrEqual(viewport.width - 8);
+    expect(avatarBox!.y).toBeGreaterThanOrEqual(8);
+
+    const panelChrome = await page.locator('.feed-panel').evaluate((element) => {
+      const styles = getComputedStyle(element);
+      return {
+        border: styles.borderTopWidth,
+        background: styles.backgroundColor,
+      };
+    });
+    expect(panelChrome.border).toBe('0px');
+    expect(panelChrome.background).toBe('rgba(0, 0, 0, 0)');
   });
 
   test('searches locally and recovers from the empty state', async ({ page }, testInfo) => {
@@ -69,6 +88,13 @@ test.describe('feed shell', () => {
 
     const panel = page.locator('.feed-panel');
     const thumb = page.locator('app-scroll-rail .rail__thumb');
+    const viewport = page.viewportSize()!;
+
+    const railBox = await page.locator('app-scroll-rail').boundingBox();
+    expect(railBox).not.toBeNull();
+    expect(railBox!.x + railBox!.width).toBeGreaterThanOrEqual(viewport.width - 1);
+    expect(railBox!.y).toBeLessThanOrEqual(1);
+    expect(railBox!.height).toBeGreaterThanOrEqual(viewport.height - 1);
 
     const before = await thumb.boundingBox();
     await panel.evaluate((element) => {
