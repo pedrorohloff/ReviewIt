@@ -1,0 +1,31 @@
+<section class="feed-layout" aria-labelledby="feed-title">
+  <div
+    #feedPanel
+    id="feed-panel"
+    class="feed-panel"
+    role="region"
+    aria-label="Feed de reviews"
+    tabindex="0"
+  >
+    <div class="feed-column">
+      <app-feed-header />
+
+      <div class="feed-content" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          <app-feed-skeleton />
+        } @else if (posts().length === 0) {
+          <app-empty-state />
+        } @else {
+          <div class="feed-list">
+            @for (post of posts(); track post.id) {
+              <app-review-card [post]="post" />
+            }
+          </div>
+          <app-feed-footer />
+        }
+      </div>
+    </div>
+  </div>
+
+  <app-scroll-rail [target]="panel()?.nativeElement ?? null" />
+</section>

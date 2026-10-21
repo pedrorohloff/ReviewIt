@@ -1,0 +1,70 @@
+<section
+  id="filter-panel"
+  class="filter-popover"
+  role="dialog"
+  aria-labelledby="filter-title"
+  aria-modal="false"
+>
+  <header class="filter-popover__head">
+    <div>
+      <p class="filter-popover__eyebrow">Refinar o feed</p>
+      <h2 id="filter-title">filtro</h2>
+    </div>
+
+    <button type="button" class="icon-button" aria-label="Fechar filtros" (click)="close()">
+      <app-icon name="x" [size]="18" />
+    </button>
+  </header>
+
+  <div class="filter-popover__group">
+    <p class="filter-popover__label">Tipo de conteúdo</p>
+    <div class="chips">
+      @for (option of typeOptions; track option.value) {
+        <button
+          type="button"
+          class="chip"
+          [class.is-active]="contentType() === option.value"
+          [attr.aria-pressed]="contentType() === option.value"
+          (click)="setContentType(option.value)"
+        >
+          @if (contentType() === option.value) {
+            <app-icon name="check" [size]="13" />
+          }
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="filter-popover__group">
+    <p class="filter-popover__label">Gênero</p>
+    <div class="chips">
+      @for (option of genreOptions; track option.value) {
+        <button
+          type="button"
+          class="chip"
+          [class.is-active]="genre() === option.value"
+          [attr.aria-pressed]="genre() === option.value"
+          (click)="setGenre(option.value)"
+        >
+          @if (genre() === option.value) {
+            <app-icon name="check" [size]="13" />
+          }
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <footer class="filter-popover__foot">
+    <p class="filter-popover__hint" aria-live="polite">{{ activeFilterLabel() }}</p>
+    <button
+      type="button"
+      class="clear-button"
+      [disabled]="activeFilterCount() === 0"
+      (click)="clear()"
+    >
+      Limpar filtros
+    </button>
+  </footer>
+</section>

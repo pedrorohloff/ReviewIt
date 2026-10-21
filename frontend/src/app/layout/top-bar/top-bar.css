@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) 56px;
+  gap: 16px;
+  align-items: center;
+}
+
+.topbar__filter {
+  position: relative;
+  min-width: 0;
+}
+
+.topbar__avatar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border: 1.5px solid var(--color-olive);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.filter-button:hover {
+  background: rgba(221, 190, 169, 0.35);
+}
+
+.filter-button.is-active {
+  border-color: var(--color-sage-deep);
+  background: var(--color-sage);
+  color: var(--color-ink-strong);
+}
+
+.filter-button__badge {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-olive);
+  color: var(--color-surface);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.filter-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  cursor: default;
+  background: transparent;
+}
+
+@media (max-width: 1023px) {
+  .topbar {
+    grid-template-columns: 48px minmax(0, 1fr) 52px;
+    gap: 12px;
+  }
+
+  .filter-button {
+    width: 48px;
+    padding: 0;
+  }
+
+  .filter-button__label {
+    display: none;
+  }
+
+  .filter-button__badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+  }
+}
+
+@media (max-width: 639px) {
+  .topbar {
+    grid-template-areas:
+      'filter . avatar'
+      'search search search';
+    grid-template-columns: 44px minmax(0, 1fr) 52px;
+    gap: 10px 12px;
+  }
+
+  .topbar__filter {
+    grid-area: filter;
+  }
+
+  app-search-field {
+    grid-area: search;
+  }
+
+  .topbar__avatar {
+    grid-area: avatar;
+  }
+
+  .filter-button {
+    width: 44px;
+  }
+
+  .filter-backdrop {
+    background: var(--backdrop);
+  }
+}

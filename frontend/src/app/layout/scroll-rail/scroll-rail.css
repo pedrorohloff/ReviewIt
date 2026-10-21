@@ -1,0 +1,35 @@
+:host {
+  position: relative;
+  display: block;
+  width: 10px;
+  height: 100%;
+}
+
+.rail__track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--rail-track);
+  transform: translateX(-50%);
+}
+
+.rail__thumb {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--color-olive);
+  transition:
+    height 70ms linear,
+    transform 70ms linear;
+}
+
+@media (max-width: 1023px) {
+  :host {
+    display: none;
+  }
+}

@@ -1,0 +1,38 @@
+/**
+ * ReviewIt design tokens.
+ * Palette: #cb997e #ddbea9 #ffe8d6 #b7b7a4 #a5a58d #6b705c
+ * #b7b7a4 is the primary accent.
+ * Derived neutrals (#3f4238, #2f3128) and danger (#a34a3a) exist for contrast.
+ */
+@theme {
+  --color-cream: #ffe8d6;
+  --color-surface: #fffaf4;
+  --color-almond: #ddbea9;
+  --color-clay: #cb997e;
+  --color-sage: #b7b7a4;
+  --color-sage-deep: #a5a58d;
+  --color-olive: #6b705c;
+  --color-ink: #3f4238;
+  --color-ink-strong: #2f3128;
+  --color-danger: #a34a3a;
+  --color-danger-soft: #f4ddd7;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+
+  --radius-tile: 16px;
+  --radius-card: 24px;
+  --radius-panel: 32px;
+  --radius-shell: 28px;
+
+  --shadow-card: 0 1px 2px rgba(63, 66, 56, 0.04);
+  --shadow-card-hover: 0 10px 30px rgba(107, 112, 92, 0.12);
+  --shadow-popover: 0 18px 50px rgba(63, 66, 56, 0.18);
+}
+
+:root {
+  --focus-glow: rgba(183, 183, 164, 0.55);
+  --rail-track: rgba(221, 190, 169, 0.45);
+  --watermark-color: rgba(107, 112, 92, 0.12);
+  --backdrop: rgba(63, 66, 56, 0.28);
+}

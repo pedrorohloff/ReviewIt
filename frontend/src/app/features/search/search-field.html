@@ -1,0 +1,21 @@
+<div class="search">
+  <app-icon class="search__icon" name="search" [size]="18" />
+
+  <input
+    #input
+    class="search__input"
+    type="search"
+    placeholder="pesquisa"
+    autocomplete="off"
+    [value]="query()"
+    aria-label="Pesquisar reviews"
+    (input)="onInput($event)"
+    (keydown.escape)="onEscape()"
+  />
+
+  @if (query().length > 0) {
+    <button type="button" class="search__clear" aria-label="Limpar busca" (click)="clear()">
+      <app-icon name="x" [size]="16" />
+    </button>
+  }
+</div>

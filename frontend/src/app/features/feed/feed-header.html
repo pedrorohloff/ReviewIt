@@ -1,0 +1,26 @@
+<header class="feed-head">
+  <div>
+    <p class="feed-head__eyebrow">Comunidade</p>
+    <h1 id="feed-title">Reviews</h1>
+    <p class="feed-head__count" aria-live="polite">{{ countLabel() }}</p>
+  </div>
+
+  <div class="sort" role="group" aria-label="Ordenar reviews">
+    <button
+      type="button"
+      [class.is-active]="sort() === 'recent'"
+      [attr.aria-pressed]="sort() === 'recent'"
+      (click)="setSort('recent')"
+    >
+      Recentes
+    </button>
+    <button
+      type="button"
+      [class.is-active]="sort() === 'popular'"
+      [attr.aria-pressed]="sort() === 'popular'"
+      (click)="setSort('popular')"
+    >
+      Populares
+    </button>
+  </div>
+</header>

@@ -1,0 +1,46 @@
+<article class="card">
+  <app-review-cover class="card__cover" [type]="post().contentType" [title]="post().title" />
+
+  <div class="card__body">
+    <div class="card__meta">
+      <span class="meta-chip meta-chip--type">{{ typeLabel() }}</span>
+      <span class="meta-chip">{{ genreLabel() }}</span>
+      <time class="card__time" [attr.datetime]="post().createdAt">
+        {{ post().createdAt | relativeTime }}
+      </time>
+    </div>
+
+    <h2>{{ post().title }}</h2>
+
+    <div class="card__author">
+      <app-avatar [name]="post().author.username" [url]="post().author.avatarUrl" [size]="28" />
+      <span>{{ post().author.username }}</span>
+    </div>
+
+    <p class="card__excerpt">{{ post().content }}</p>
+
+    <footer class="card__foot">
+      <span class="stat">
+        <app-icon name="heart" [size]="16" />
+        <span class="sr-only">
+          {{ post().likeCount }} {{ post().likeCount === 1 ? 'curtida' : 'curtidas' }}
+        </span>
+        <span aria-hidden="true">{{ post().likeCount }}</span>
+      </span>
+
+      <span class="stat">
+        <app-icon name="message" [size]="16" />
+        <span class="sr-only">
+          {{ post().commentCount }}
+          {{ post().commentCount === 1 ? 'comentário' : 'comentários' }}
+        </span>
+        <span aria-hidden="true">{{ post().commentCount }}</span>
+      </span>
+
+      <span class="read-more">
+        ler mais
+        <app-icon name="arrow-right" [size]="15" />
+      </span>
+    </footer>
+  </div>
+</article>
