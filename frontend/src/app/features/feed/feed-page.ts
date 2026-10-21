@@ -3,61 +3,72 @@ import {
   Component,
   DestroyRef,
   ElementRef,
-  afterNextRender,
+  computed,
   inject,
-  signal,
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { DemoFeedService } from './demo-feed.service';
+import { ScrollRail } from '@app/layout/scroll-rail/scroll-rail';
 import { EmptyState } from './empty-state';
 import { FeedFooter } from './feed-footer';
 import { FeedHeader } from './feed-header';
+import { FeedSentinel } from './feed-sentinel';
 import { FeedSkeleton } from './feed-skeleton';
+import { FeedStore } from './feed-store';
 import { parseFeedQuery } from './feed-query';
 import { ReviewCard } from './review-card';
-import { ScrollRail } from '@app/layout/scroll-rail/scroll-rail';
 
 /**
- * Step 1 mounts the feed with a short simulated load so the skeleton can be
- * reviewed. Step 3 removes the timer and drives `loading` from FeedStore.
- *
- * URL hydration is intentionally one-way for now: Step 2 reads `q`, `type`,
- * `genre` and `sort` from the deep link; Step 3 replaces this service with
- * FeedStore and keeps the URL in sync while the user edits filters.
+ * Feed route component. It renders FeedStore's state and translates the URL
+ * deep link into filters; the store owns loading, paging and error handling.
+ * Step 3, §6 keeps this component free of data logic on purpose.
  */
-const SIMULATED_LOAD_MS = 280;
-
 @Component({
   selector: 'app-feed-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmptyState, FeedFooter, FeedHeader, FeedSkeleton, ReviewCard, ScrollRail],
+  imports: [
+    EmptyState,
+    FeedFooter,
+    FeedHeader,
+    FeedSentinel,
+    FeedSkeleton,
+    ReviewCard,
+    ScrollRail,
+  ],
   templateUrl: './feed-page.html',
   styleUrl: './feed-page.css',
 })
 export class FeedPage {
-  private readonly feed = inject(DemoFeedService);
+  private readonly store = inject(FeedStore);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly panel = viewChild<ElementRef<HTMLElement>>('feedPanel');
-  protected readonly posts = this.feed.posts;
-  protected readonly loading = signal(true);
+  protected readonly posts = this.store.posts;
+  protected readonly status = this.store.status;
+  protected readonly hasNext = this.store.hasNext;
+  protected readonly isInitialLoading = this.store.isInitialLoading;
+  protected readonly isLoadingMore = this.store.isLoadingMore;
+  protected readonly hasFailed = computed(
+    () => this.status() === 'error' || this.status() === 'errorMore',
+  );
+  protected readonly errorMessage = computed(
+    () => this.store.error()?.message ?? 'Não foi possível carregar o feed agora.',
+  );
 
   constructor() {
     const subscription = this.route.queryParamMap.subscribe((params) => {
-      const filters = parseFeedQuery(params);
-      this.feed.setQuery(filters.q);
-      this.feed.setContentType(filters.contentType ?? 'all');
-      this.feed.setGenre(filters.genre ?? 'all');
-      this.feed.setSort(filters.sort);
+      this.store.ensureLoaded(parseFeedQuery(params));
     });
 
     this.destroyRef.onDestroy(() => subscription.unsubscribe());
+  }
 
-    afterNextRender(() => {
-      const timer = setTimeout(() => this.loading.set(false), SIMULATED_LOAD_MS);
-      this.destroyRef.onDestroy(() => clearTimeout(timer));
-    });
+  protected loadMore(): void {
+    this.store.loadMore();
+  }
+
+  protected retry(): void {
+    this.store.retry();
   }
 }

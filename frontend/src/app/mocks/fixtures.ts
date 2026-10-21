@@ -31,8 +31,8 @@ const bia = {
 };
 
 /**
- * Static data for Step 1. Replaced by MockReviewApi/HttpReviewApi in Step 2.
- * Dates are fixed so the visual stays deterministic.
+ * Curated posts used as the first entries of the demo dataset built by
+ * `mock-seed.ts`. Dates are fixed so the visual stays deterministic.
  */
 export const DEMO_POSTS: readonly Post[] = [
   {

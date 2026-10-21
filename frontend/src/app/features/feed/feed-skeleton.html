@@ -1,7 +1,9 @@
 <div class="skeleton" role="status">
-  <span class="skeleton__label">Carregando reviews…</span>
+  @if (!compact()) {
+    <span class="skeleton__label">Carregando reviews…</span>
+  }
 
-  @for (item of [1, 2, 3]; track item) {
+  @for (item of items(); track item) {
     <div class="skeleton__card" aria-hidden="true">
       <div class="skeleton__cover"></div>
       <div class="skeleton__body">

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { DemoFeedService, SortOption } from '@app/features/feed/demo-feed.service';
+import { SortOption } from '@app/core/models/post';
 import { reviewCountLabel } from '@app/shared/utils/format';
+import { FeedStore } from './feed-store';
 
 @Component({
   selector: 'app-feed-header',
@@ -9,13 +10,13 @@ import { reviewCountLabel } from '@app/shared/utils/format';
   styleUrl: './feed-header.css',
 })
 export class FeedHeader {
-  private readonly feed = inject(DemoFeedService);
+  private readonly store = inject(FeedStore);
 
-  protected readonly total = this.feed.total;
-  protected readonly sort = this.feed.sort;
+  protected readonly total = this.store.totalElements;
+  protected readonly sort = computed(() => this.store.filters().sort);
   protected readonly countLabel = computed(() => reviewCountLabel(this.total()));
 
   protected setSort(value: SortOption): void {
-    this.feed.setSort(value);
+    this.store.setFilters({ ...this.store.filters(), sort: value });
   }
 }

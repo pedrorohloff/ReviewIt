@@ -10,10 +10,16 @@
     <div class="feed-column">
       <app-feed-header />
 
-      <div class="feed-content" [attr.aria-busy]="loading()">
-        @if (loading()) {
+      <div class="feed-content" [attr.aria-busy]="isInitialLoading() || isLoadingMore()">
+        @if (isInitialLoading()) {
           <app-feed-skeleton />
-        } @else if (posts().length === 0) {
+        } @else if (status() === 'error') {
+          <div class="feed-status" role="alert">
+            <p class="feed-status__title">Não foi possível carregar o feed</p>
+            <p class="feed-status__copy">{{ errorMessage() }}</p>
+            <button type="button" class="feed-action" (click)="retry()">Tentar novamente</button>
+          </div>
+        } @else if (status() === 'empty') {
           <app-empty-state />
         } @else {
           <div class="feed-list">
@@ -21,7 +27,24 @@
               <app-review-card [post]="post" />
             }
           </div>
-          <app-feed-footer />
+
+          @if (isLoadingMore()) {
+            <app-feed-skeleton class="feed-append" [count]="2" [compact]="true" />
+          }
+
+          @if (status() === 'errorMore') {
+            <div class="feed-status feed-status--inline" role="alert">
+              <p class="feed-status__copy">{{ errorMessage() }}</p>
+              <button type="button" class="feed-action" (click)="retry()">Tentar novamente</button>
+            </div>
+          } @else if (status() === 'end') {
+            <app-feed-footer />
+          } @else if (hasNext()) {
+            <button type="button" class="feed-more" [disabled]="isLoadingMore()" (click)="loadMore()">
+              Carregar mais reviews
+            </button>
+            <app-feed-sentinel [root]="panel()?.nativeElement ?? null" (reached)="loadMore()" />
+          }
         }
       </div>
     </div>

@@ -1,13 +1,20 @@
 import { provideRouter, Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+import { MockReviewApi } from './core/api/mock-review-api';
+import { REVIEW_API } from './core/api/review-api';
 import { App } from './app';
 import { routes } from './app.routes';
 
 describe('App', () => {
   beforeEach(async () => {
+    localStorage.clear();
+
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes)],
+      providers: [
+        provideRouter(routes),
+        { provide: REVIEW_API, useValue: new MockReviewApi({ min: 0, max: 0 }) },
+      ],
     }).compileComponents();
   });
 

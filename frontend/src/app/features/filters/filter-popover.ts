@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
-import { ContentType, Genre } from '@app/core/models/post';
-import {
-  ContentTypeFilter,
-  DemoFeedService,
-  GenreFilter,
-} from '@app/features/feed/demo-feed.service';
+import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
+import { ContentType, FeedFilters, Genre } from '@app/core/models/post';
+import { FeedStore } from '@app/features/feed/feed-store';
 import { CONTENT_TYPE_LABELS, GENRE_LABELS } from '@app/shared/utils/format';
 import { Icon } from '@app/shared/ui/icon/icon';
+
+type ContentTypeFilter = ContentType | 'all';
+type GenreFilter = Genre | 'all';
 
 interface FilterOption<T extends string> {
   value: T;
@@ -37,29 +36,50 @@ const GENRE_OPTIONS: readonly FilterOption<GenreFilter>[] = [
   styleUrl: './filter-popover.css',
 })
 export class FilterPopover {
-  private readonly feed = inject(DemoFeedService);
+  private readonly store = inject(FeedStore);
 
   readonly closed = output<void>();
 
   protected readonly typeOptions = TYPE_OPTIONS;
   protected readonly genreOptions = GENRE_OPTIONS;
-  protected readonly contentType = this.feed.contentType;
-  protected readonly genre = this.feed.genre;
-  protected readonly activeFilterCount = this.feed.activeFilterCount;
-  protected readonly activeFilterLabel = this.feed.activeFilterLabel;
+  protected readonly contentType = computed<ContentTypeFilter>(
+    () => this.store.filters().contentType ?? 'all',
+  );
+  protected readonly genre = computed<GenreFilter>(() => this.store.filters().genre ?? 'all');
+  protected readonly activeFilterCount = this.store.activeFilterCount;
+  protected readonly activeFilterLabel = this.store.activeFilterLabel;
+
   protected setContentType(value: ContentTypeFilter): void {
-    this.feed.setContentType(value);
+    this.patch({ contentType: value === 'all' ? undefined : value });
   }
 
   protected setGenre(value: GenreFilter): void {
-    this.feed.setGenre(value);
+    this.patch({ genre: value === 'all' ? undefined : value });
   }
 
   protected clear(): void {
-    this.feed.clearFilters();
+    const { q, sort } = this.store.filters();
+    this.store.setFilters({ q, sort });
   }
 
   protected close(): void {
     this.closed.emit();
+  }
+
+  /** Rebuilds the filters dropping the keys that were reset to "all". */
+  private patch(partial: { contentType?: ContentType; genre?: Genre }): void {
+    const current = this.store.filters();
+    const next: FeedFilters = { q: current.q, sort: current.sort };
+    const contentType = 'contentType' in partial ? partial.contentType : current.contentType;
+    const genre = 'genre' in partial ? partial.genre : current.genre;
+
+    if (contentType) {
+      next.contentType = contentType;
+    }
+    if (genre) {
+      next.genre = genre;
+    }
+
+    this.store.setFilters(next);
   }
 }

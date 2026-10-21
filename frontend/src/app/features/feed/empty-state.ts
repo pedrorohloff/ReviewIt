@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { DemoFeedService } from './demo-feed.service';
+import { FeedStore } from './feed-store';
 
 @Component({
   selector: 'app-empty-state',
@@ -8,9 +8,9 @@ import { DemoFeedService } from './demo-feed.service';
   styleUrl: './empty-state.css',
 })
 export class EmptyState {
-  private readonly feed = inject(DemoFeedService);
+  private readonly store = inject(FeedStore);
 
   protected reset(): void {
-    this.feed.resetAll();
+    this.store.resetFilters();
   }
 }

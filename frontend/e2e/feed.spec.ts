@@ -1,4 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { Page, expect, test } from '@playwright/test';
+
+/** The demo dataset has 48 posts and the feed loads 12 per page. */
+const PAGE_SIZE = 12;
+const TOTAL_POSTS = 48;
+
+async function scrollToEnd(page: Page): Promise<void> {
+  await page.locator('.feed-panel').evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+}
 
 test.describe('feed shell', () => {
   test('renders the shell and the initial feed', async ({ page }, testInfo) => {
@@ -7,8 +17,9 @@ test.describe('feed shell', () => {
 
     await expect(page.locator('app-top-bar')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1, name: 'Reviews' })).toBeVisible();
+    await expect(page.getByText(`${TOTAL_POSTS} reviews`)).toBeVisible();
     await expect(page.getByLabel('Pesquisar reviews')).toBeVisible();
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
     await expect(page.locator('app-feed-skeleton')).toHaveCount(0);
 
     const viewport = page.viewportSize()!;
@@ -40,10 +51,28 @@ test.describe('feed shell', () => {
     expect(panelChrome.background).toBe('rgba(0, 0, 0, 0)');
   });
 
-  test('searches locally and recovers from the empty state', async ({ page }, testInfo) => {
+  test('loads the next pages while scrolling to the end', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
     await page.goto('/');
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    await scrollToEnd(page);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE * 2);
+
+    await scrollToEnd(page);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE * 3);
+
+    await scrollToEnd(page);
+    await expect(page.locator('app-review-card')).toHaveCount(TOTAL_POSTS);
+
+    await expect(page.locator('app-feed-footer')).toBeVisible();
+    await expect(page.locator('.feed-more')).toHaveCount(0);
+  });
+
+  test('searches on the server and recovers from the empty state', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
 
     await page.getByLabel('Pesquisar reviews').fill('zzzz');
 
@@ -53,22 +82,26 @@ test.describe('feed shell', () => {
 
     await page.getByRole('button', { name: 'Limpar busca e filtros' }).click();
 
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
     await expect(page.getByLabel('Pesquisar reviews')).toHaveValue('');
   });
 
-  test('filters by type and closes with Escape', async ({ page }, testInfo) => {
+  test('filters by type and genre and closes with Escape', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
     await page.goto('/');
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
 
     const filterButton = page.getByRole('button', { name: 'Filtro' });
     await filterButton.click();
     await expect(page.getByRole('dialog', { name: 'filtro' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Livro', exact: true }).click();
-    await expect(page.locator('app-review-card')).toHaveCount(2);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
     await expect(page.getByText('1 filtro ativo')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Drama', exact: true }).click();
+    await expect(page.locator('app-review-card')).toHaveCount(3);
+    await expect(page.getByText('2 filtros ativos')).toBeVisible();
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: 'filtro' })).toHaveCount(0);
@@ -94,20 +127,20 @@ test.describe('feed shell', () => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
 
     await page.goto('/?type=Book&genre=Drama&sort=popular');
-    await expect(page.locator('app-review-card')).toHaveCount(1);
+    await expect(page.locator('app-review-card')).toHaveCount(3);
     await expect(
       page.getByRole('button', { name: 'Filtro, 2 filtros ativos' }),
     ).toBeVisible();
 
     await page.goto('/?type=Banana&genre=Aventura&sort=aleatorio');
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
     await expect(page.getByRole('button', { name: 'Filtro', exact: true })).toBeVisible();
   });
 
   test('keeps the custom rail in sync with the panel', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
     await page.goto('/');
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
 
     const panel = page.locator('.feed-panel');
     const thumb = page.locator('app-scroll-rail .rail__thumb');
@@ -142,7 +175,7 @@ test.describe('mobile shell', () => {
   test('fits the viewport and opens the filter as a bottom sheet', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile-chromium', 'Mobile-only assertion');
     await page.goto('/');
-    await expect(page.locator('app-review-card')).toHaveCount(8);
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
