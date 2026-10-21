@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 
-const MIN_THUMB_HEIGHT = 48;
+const MIN_THUMB_REM = 3;
 
 /**
  * Thin custom rail for the feed panel. It mirrors the panel's height,
@@ -31,7 +31,7 @@ export class ScrollRail {
   readonly target = input<HTMLElement | null>(null);
 
   protected readonly thumbTop = signal(0);
-  protected readonly thumbHeight = signal(MIN_THUMB_HEIGHT);
+  protected readonly thumbHeight = signal(0);
 
   constructor() {
     effect((onCleanup) => {
@@ -73,13 +73,16 @@ export class ScrollRail {
         return;
       }
 
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const minThumbHeight = MIN_THUMB_REM * rootFontSize;
+
       if (scrollHeight <= clientHeight) {
         this.thumbHeight.set(railHeight);
         this.thumbTop.set(0);
         return;
       }
 
-      const thumbHeight = Math.max(MIN_THUMB_HEIGHT, (clientHeight / scrollHeight) * railHeight);
+      const thumbHeight = Math.max(minThumbHeight, (clientHeight / scrollHeight) * railHeight);
       const maxScroll = scrollHeight - clientHeight;
       const maxThumbTop = railHeight - thumbHeight;
       const top = (target.scrollTop / maxScroll) * maxThumbTop;

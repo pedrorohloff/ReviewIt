@@ -14,7 +14,7 @@
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 16px 16px;
+  padding: 0.25rem 1rem 1rem;
   scrollbar-width: none;
 }
 
@@ -23,13 +23,12 @@
 }
 
 .feed-panel:focus-visible {
-  outline-offset: -4px;
+  outline-offset: -0.25rem;
 }
 
 .feed-column {
   display: flex;
-  width: 100%;
-  max-width: 900px;
+  width: min(100%, 56.25rem);
   min-height: 100%;
   flex-direction: column;
   margin-inline: auto;
@@ -44,33 +43,33 @@
 .feed-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 @media (max-width: 1023px) {
   .feed-panel {
-    padding: 4px 16px;
+    padding: 0.25rem 1rem;
     scrollbar-color: var(--color-muted) transparent;
     scrollbar-width: thin;
   }
 
   .feed-panel::-webkit-scrollbar {
     display: block;
-    width: 8px;
+    width: 0.5rem;
   }
 
   .feed-panel::-webkit-scrollbar-thumb {
-    border-radius: 999px;
+    border-radius: var(--radius-chip);
     background: var(--color-muted);
   }
 }
 
 @media (max-width: 639px) {
   .feed-panel {
-    padding: 4px 12px 12px;
+    padding: 0.25rem 0.75rem 0.75rem;
   }
 
   .feed-list {
-    gap: 12px;
+    gap: 0.75rem;
   }
 }

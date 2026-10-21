@@ -23,8 +23,8 @@
     background: var(--color-page);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 24px;
+    font-size: 0.9375rem;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -54,9 +54,9 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ink);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 5px var(--focus-glow);
+    outline: 0.125rem solid var(--color-ink);
+    outline-offset: 0.125rem;
+    box-shadow: 0 0 0 0.3125rem var(--focus-glow);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -82,15 +82,15 @@
 
 .skip-link {
   position: fixed;
-  top: 8px;
+  top: 0.5rem;
   left: 50%;
   z-index: 100;
-  padding: 10px 18px;
+  padding: 0.625rem 1.125rem;
   border: 1.5px solid var(--color-ink);
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-ink);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   transform: translate(-50%, -200%);
   transition: transform 120ms ease-out;

@@ -5,7 +5,7 @@
   bottom: 0;
   z-index: 60;
   display: block;
-  width: 10px;
+  width: 0.625rem;
   pointer-events: none;
 }
 
@@ -14,8 +14,8 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 6px;
-  border-radius: 999px;
+  width: 0.375rem;
+  border-radius: 0.1875rem;
   background: var(--rail-track);
   transform: translateX(-50%);
 }
@@ -24,8 +24,8 @@
   position: absolute;
   top: 0;
   left: 50%;
-  width: 6px;
-  border-radius: 999px;
+  width: 0.375rem;
+  border-radius: 0.1875rem;
   background: var(--color-muted);
   transition:
     height 70ms linear,

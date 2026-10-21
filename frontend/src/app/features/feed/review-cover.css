@@ -5,7 +5,7 @@
 .cover {
   position: relative;
   width: 100%;
-  height: var(--cover-height, 136px);
+  aspect-ratio: 13 / 17;
   overflow: hidden;
   border-radius: var(--radius-tile);
   isolation: isolate;
@@ -19,7 +19,7 @@
     rgba(255, 250, 244, 0.16) 0,
     rgba(255, 250, 244, 0.16) 1px,
     transparent 1px,
-    transparent 7px
+    transparent 0.4375rem
   );
   content: '';
   pointer-events: none;
@@ -47,17 +47,17 @@
 
 .cover__icon {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 0.75rem;
+  left: 0.75rem;
   opacity: 0.92;
 }
 
 .cover__initial {
   position: absolute;
-  bottom: 22px;
-  left: 12px;
+  bottom: 1.375rem;
+  left: 0.75rem;
   font-family: var(--font-display);
-  font-size: 44px;
+  font-size: 2.75rem;
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -65,9 +65,9 @@
 
 .cover__type {
   position: absolute;
-  bottom: 9px;
-  left: 12px;
-  font-size: 8.5px;
+  bottom: 0.5625rem;
+  left: 0.75rem;
+  font-size: 0.53125rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   line-height: 1;

@@ -19,8 +19,8 @@ export type IconName =
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <svg
-      [attr.width]="size()"
-      [attr.height]="size()"
+      [style.width.rem]="size() / 16"
+      [style.height.rem]="size() / 16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

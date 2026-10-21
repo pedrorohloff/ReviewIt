@@ -20,7 +20,7 @@ import { RouterLink } from '@angular/router';
       display: grid;
       height: 100%;
       place-items: center;
-      padding: 24px;
+      padding: 1.5rem;
       border: 1.5px solid var(--color-border-strong);
       border-radius: var(--radius-panel);
       background: var(--color-surface);
@@ -28,13 +28,13 @@ import { RouterLink } from '@angular/router';
     }
 
     .not-found {
-      max-width: 420px;
+      max-width: 26.25rem;
     }
 
     .not-found__eyebrow {
-      margin: 0 0 4px;
+      margin: 0 0 0.25rem;
       color: var(--color-muted);
-      font-size: 11px;
+      font-size: 0.6875rem;
       font-weight: 650;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -44,29 +44,29 @@ import { RouterLink } from '@angular/router';
       margin: 0;
       color: var(--color-ink-strong);
       font-family: var(--font-display);
-      font-size: 32px;
+      font-size: 2rem;
       font-weight: 600;
       letter-spacing: -0.02em;
       line-height: 1.15;
     }
 
     .not-found__copy {
-      margin: 12px 0 20px;
+      margin: 0.75rem 0 1.25rem;
       color: var(--color-muted);
-      font-size: 13.5px;
+      font-size: 0.84375rem;
       line-height: 1.6;
     }
 
     .not-found__link {
       display: inline-flex;
-      height: 40px;
+      height: 2.5rem;
       align-items: center;
-      padding: 0 18px;
+      padding: 0 1.125rem;
       border: 1.5px solid var(--color-ink);
-      border-radius: 999px;
+      border-radius: var(--radius-control);
       background: var(--color-ink);
       color: var(--color-surface);
-      font-size: 12.5px;
+      font-size: 0.78125rem;
       font-weight: 650;
     }
   `,

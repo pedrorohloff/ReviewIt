@@ -7,9 +7,9 @@ import { getInitials } from '@app/shared/utils/format';
   template: `
     <span
       class="avatar"
-      [style.width.px]="size()"
-      [style.height.px]="size()"
-      [style.font-size.px]="fontSize()"
+      [style.width.rem]="size() / 16"
+      [style.height.rem]="size() / 16"
+      [style.font-size.rem]="fontSize() / 16"
       [attr.aria-label]="'Foto de ' + name()"
       role="img"
     >
@@ -32,7 +32,7 @@ import { getInitials } from '@app/shared/utils/format';
       justify-content: center;
       overflow: hidden;
       border: 1.5px solid var(--color-olive);
-      border-radius: 999px;
+      border-radius: 50%;
       background: var(--color-sage);
       color: var(--color-ink-strong);
       font-family: var(--font-sans);
