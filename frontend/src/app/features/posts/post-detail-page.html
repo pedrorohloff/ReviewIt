@@ -90,6 +90,16 @@
               >
                 <app-icon name="share" [size]="17" />
               </button>
+
+              <button
+                type="button"
+                class="icon-button"
+                aria-label="Denunciar review"
+                title="Denunciar"
+                (click)="openReport()"
+              >
+                <app-icon name="flag" [size]="17" />
+              </button>
             </div>
           </div>
         </header>
@@ -120,6 +130,32 @@
         (confirmed)="confirmRemove()"
         (cancelled)="cancelRemove()"
       />
+    }
+
+    @if (reportOpen()) {
+      <app-confirm-dialog
+        title="Denunciar review"
+        message="Conte o que há de errado com esta review. Nossa equipe vai analisar o conteúdo."
+        confirmLabel="Enviar denúncia"
+        busyLabel="Enviando…"
+        [busy]="reporting()"
+        [confirmDisabled]="reportDisabled()"
+        (confirmed)="submitReport()"
+        (cancelled)="closeReport()"
+      >
+        <label class="field" for="report-reason">Motivo</label>
+        <textarea
+          id="report-reason"
+          class="field__input"
+          data-autofocus
+          rows="4"
+          maxlength="500"
+          placeholder="Descreva o problema (mínimo 5 caracteres)"
+          [value]="reportReason()"
+          (input)="onReasonInput($event)"
+        ></textarea>
+        <p class="field__hint">{{ reasonLength() }}/500 · mínimo 5 caracteres</p>
+      </app-confirm-dialog>
     }
   </div>
 </section>

@@ -6,6 +6,8 @@ import { ApiError } from '@app/core/api/api-error';
 import { REVIEW_API, ReviewApi } from '@app/core/api/review-api';
 import { LikeResult } from '@app/core/models/like';
 import { Post } from '@app/core/models/post';
+import { Report } from '@app/core/models/report';
+import { ToasterService } from '@app/core/services/toaster.service';
 import { PostDetailPage } from './post-detail-page';
 
 function makePost(overrides: Partial<Post> = {}): Post {
@@ -27,9 +29,21 @@ function makePost(overrides: Partial<Post> = {}): Post {
   };
 }
 
+function makeReport(): Report {
+  return {
+    id: 'report-1',
+    reporterId: 'user-1',
+    postId: 'post-1',
+    commentId: null,
+    reason: 'spam',
+    status: 'Pending',
+  };
+}
+
 function setup(api: {
   getPost: (id: string) => Observable<Post>;
   togglePostLike?: (id: string) => Observable<LikeResult>;
+  createReport?: () => Observable<Report>;
 }) {
   const emptyComments = { comments: [], totalElements: 0, totalPages: 0, hasNext: false };
 
@@ -41,6 +55,7 @@ function setup(api: {
         useValue: {
           listComments: () => of(emptyComments),
           togglePostLike: () => of({ liked: true, likeCount: 149 }),
+          createReport: () => of(makeReport()),
           ...api,
         } as unknown as ReviewApi,
       },
@@ -60,6 +75,18 @@ async function render(fixture: ComponentFixture<PostDetailPage>, id: string): Pr
 
 function text(fixture: ComponentFixture<PostDetailPage>): string {
   return (fixture.nativeElement as HTMLElement).textContent ?? '';
+}
+
+function findButton(root: HTMLElement, label: string): HTMLButtonElement {
+  const button = Array.from(root.querySelectorAll('button')).find((candidate) =>
+    candidate.textContent?.includes(label),
+  );
+
+  if (!button) {
+    throw new Error(`Button ${label} not found.`);
+  }
+
+  return button;
 }
 
 describe('PostDetailPage', () => {
@@ -111,6 +138,62 @@ describe('PostDetailPage', () => {
 
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
       'A casa que aprendi a habitar',
+    );
+  });
+
+  it('reports the review after the reason reaches five characters', async () => {
+    const createReport = vi.fn(() => of(makeReport()));
+    const fixture = setup({ getPost: () => of(makePost()), createReport });
+    await render(fixture, 'post-1');
+
+    const element = fixture.nativeElement as HTMLElement;
+    (element.querySelector('[aria-label="Denunciar review"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const dialog = element.querySelector('[role="dialog"]') as HTMLElement;
+    expect(dialog.textContent).toContain('Denunciar review');
+
+    const reason = dialog.querySelector('#report-reason') as HTMLTextAreaElement;
+    const submit = findButton(dialog, 'Enviar denúncia');
+    expect(submit.disabled).toBe(true);
+
+    reason.value = 'spam!';
+    reason.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(submit.disabled).toBe(false);
+
+    submit.click();
+    fixture.detectChanges();
+
+    expect(createReport).toHaveBeenCalledWith({ postId: 'post-1', reason: 'spam!' });
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+    expect(TestBed.inject(ToasterService).toasts().at(-1)?.message).toBe(
+      'Denúncia enviada. Obrigado por avisar.',
+    );
+  });
+
+  it('explains a duplicate report instead of leaking the API error', async () => {
+    const fixture = setup({
+      getPost: () => of(makePost()),
+      createReport: () => throwError(() => new ApiError(409, 'Conflito', 'Already reported.')),
+    });
+    await render(fixture, 'post-1');
+
+    const element = fixture.nativeElement as HTMLElement;
+    (element.querySelector('[aria-label="Denunciar review"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const dialog = element.querySelector('[role="dialog"]') as HTMLElement;
+    const reason = dialog.querySelector('#report-reason') as HTMLTextAreaElement;
+    reason.value = 'spam repetido';
+    reason.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    findButton(dialog, 'Enviar denúncia').click();
+    fixture.detectChanges();
+
+    expect(TestBed.inject(ToasterService).toasts().at(-1)?.message).toBe(
+      'Você já denunciou esta review.',
     );
   });
 

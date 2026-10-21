@@ -89,6 +89,14 @@ export class PostDetailPage {
   protected readonly pendingDelete = signal<Comment | null>(null);
   protected readonly deleting = signal(false);
 
+  protected readonly reportOpen = signal(false);
+  protected readonly reportReason = signal('');
+  protected readonly reporting = signal(false);
+  protected readonly reasonLength = computed(() => this.reportReason().trim().length);
+  protected readonly reportDisabled = computed(
+    () => this.reporting() || this.reasonLength() < 5,
+  );
+
   private fragmentScrolled = false;
 
   constructor() {
@@ -183,6 +191,44 @@ export class PostDetailPage {
         this.deleting.set(false);
         this.pendingDelete.set(null);
         this.toaster.error(toApiError(error).message);
+      },
+    });
+  }
+
+  protected openReport(): void {
+    this.reportReason.set('');
+    this.reportOpen.set(true);
+  }
+
+  protected closeReport(): void {
+    if (!this.reporting()) {
+      this.reportOpen.set(false);
+    }
+  }
+
+  protected onReasonInput(event: Event): void {
+    this.reportReason.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  protected submitReport(): void {
+    if (this.reportDisabled()) {
+      return;
+    }
+
+    this.reporting.set(true);
+
+    this.store.report(this.reportReason().trim()).subscribe({
+      next: () => {
+        this.reporting.set(false);
+        this.reportOpen.set(false);
+        this.toaster.success('Denúncia enviada. Obrigado por avisar.');
+      },
+      error: (error: unknown) => {
+        this.reporting.set(false);
+        const apiError = toApiError(error);
+        this.toaster.error(
+          apiError.status === 409 ? 'Você já denunciou esta review.' : apiError.message,
+        );
       },
     });
   }

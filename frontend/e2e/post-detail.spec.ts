@@ -112,6 +112,37 @@ test.describe('post detail', () => {
     await expect(heading).toHaveText(`Comentários (${initial})`);
   });
 
+  test('reports a review after confirming a reason', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    await clickVisibleCard(page);
+    await expect(page.locator('.detail-panel')).toBeVisible();
+
+    const trigger = page.getByRole('button', { name: 'Denunciar review' });
+    const dialog = page.getByRole('dialog', { name: 'Denunciar review' });
+
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+
+    const submit = dialog.getByRole('button', { name: 'Enviar denúncia' });
+    await expect(submit).toBeDisabled();
+
+    await dialog.getByLabel('Motivo').fill('Conteúdo ofensivo');
+    await expect(submit).toBeEnabled();
+    await submit.click();
+
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByText('Denúncia enviada. Obrigado por avisar.')).toBeVisible();
+  });
+
   test('opens the comments from the card counter', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
 
