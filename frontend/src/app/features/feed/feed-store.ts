@@ -77,16 +77,24 @@ export class FeedStore {
   }
 
   /**
-   * Called once by `FeedPage` after reading the URL. Loads page 0 on a cold or
-   * stale store; otherwise it just applies the filters (no refetch when equal).
+   * Called by `FeedPage` for the filters read from the URL. Loads page 0 on a
+   * cold or stale store; does nothing when the same filters are already
+   * loading or cached, so echoing filters back into the URL never refetches.
    */
   ensureLoaded(next: FeedFilters): void {
-    if (this.loadedAt === 0 || Date.now() - this.loadedAt > STALE_AFTER_MS) {
-      this._filters.set({ ...next });
+    if (feedFiltersEqual(next, this._filters())) {
+      const busy = this._status() === 'loading' || this._status() === 'loadingMore';
+
+      if (busy || this.isFresh()) {
+        return;
+      }
+
+      // Same filters, but the cached pages went stale: reload the first page.
       this.reset();
       this.fetch(0, true);
       return;
     }
+
     this.setFilters(next);
   }
 
@@ -123,6 +131,11 @@ export class FeedStore {
 
   markStale(): void {
     this.loadedAt = 0;
+  }
+
+  /** Whether the loaded pages are still inside the cache window. */
+  isFresh(): boolean {
+    return this.loadedAt !== 0 && Date.now() - this.loadedAt <= STALE_AFTER_MS;
   }
 
   private reset(): void {

@@ -137,6 +137,29 @@ test.describe('feed shell', () => {
     await expect(page.getByRole('button', { name: 'Filtro', exact: true })).toBeVisible();
   });
 
+  test('keeps the filters in the URL', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    await page.getByLabel('Pesquisar reviews').fill('casa');
+    await expect(page).toHaveURL('/?q=casa');
+
+    await page.getByRole('button', { name: 'Filtro' }).click();
+    await page.getByRole('button', { name: 'Livro', exact: true }).click();
+    await expect(page).toHaveURL('/?q=casa&type=Book');
+
+    await page.getByRole('button', { name: 'Limpar filtros' }).click();
+    await expect(page).toHaveURL('/?q=casa');
+
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Populares', exact: true }).click();
+    await expect(page).toHaveURL('/?q=casa&sort=popular');
+
+    await page.getByRole('button', { name: 'Limpar busca' }).click();
+    await expect(page).toHaveURL('/?sort=popular');
+  });
+
   test('keeps the custom rail in sync with the panel', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
     await page.goto('/');

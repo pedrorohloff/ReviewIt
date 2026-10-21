@@ -97,6 +97,21 @@ describe('FeedStore', () => {
     expect(listPosts).toHaveBeenCalledTimes(1);
   });
 
+  it('does not refetch while the same filters are loading or fresh', () => {
+    const { store, listPosts } = setup(() => of(postPage([makePost('1')], { hasNext: true })));
+
+    store.ensureLoaded(DEFAULT_FEED_FILTERS);
+    expect(listPosts).toHaveBeenCalledTimes(1);
+
+    store.ensureLoaded(DEFAULT_FEED_FILTERS);
+    expect(listPosts).toHaveBeenCalledTimes(1);
+
+    store.markStale();
+    store.ensureLoaded(DEFAULT_FEED_FILTERS);
+    expect(listPosts).toHaveBeenCalledTimes(2);
+    expect(listPosts).toHaveBeenLastCalledWith(FIRST_PAGE_PARAMS);
+  });
+
   it('enters the empty state when the query has no results', () => {
     const { store } = setup(() => of(postPage([], { hasNext: false, totalElements: 0 })));
 

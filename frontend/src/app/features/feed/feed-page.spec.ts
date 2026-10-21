@@ -1,14 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { ApiError } from '@app/core/api/api-error';
 import { MockReviewApi } from '@app/core/api/mock-review-api';
 import { REVIEW_API, ReviewApi } from '@app/core/api/review-api';
 import { FeedPage } from './feed-page';
+import { feedFiltersKey } from './feed-query';
 import { FeedStore } from './feed-store';
+import { ScrollMemoryService } from './scroll-memory.service';
 
 /** The mock adapter normally waits 250–450 ms; unit tests run it instantly. */
 const noLatency = { min: 0, max: 0 };
+
+const FEED_KEY = feedFiltersKey({ q: '', sort: 'recent' });
+const FILTERED_KEY = feedFiltersKey({ q: 'duna', sort: 'recent' });
 
 function routeProviders(params: Record<string, string>) {
   const paramMap = convertToParamMap(params);
@@ -19,10 +24,22 @@ function routeProviders(params: Record<string, string>) {
   };
 }
 
-function configureRoute(params: Record<string, string>, api: ReviewApi = new MockReviewApi(noLatency)): void {
+function configureRoute(
+  params: Record<string, string>,
+  api: ReviewApi = new MockReviewApi(noLatency),
+): void {
   TestBed.configureTestingModule({
-    providers: [{ provide: REVIEW_API, useValue: api }, routeProviders(params)],
+    providers: [
+      provideRouter([]),
+      { provide: REVIEW_API, useValue: api },
+      routeProviders(params),
+    ],
   });
+}
+
+async function settle(fixture: ComponentFixture<FeedPage>): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 60));
+  fixture.detectChanges();
 }
 
 async function render(
@@ -34,8 +51,7 @@ async function render(
   const fixture = TestBed.createComponent(FeedPage);
   fixture.detectChanges();
 
-  await new Promise((resolve) => setTimeout(resolve, 20));
-  fixture.detectChanges();
+  await settle(fixture);
 
   return fixture;
 }
@@ -48,9 +64,29 @@ function text(fixture: ComponentFixture<FeedPage>): string {
   return (fixture.nativeElement as HTMLElement).textContent ?? '';
 }
 
+function panelOf(fixture: ComponentFixture<FeedPage>): HTMLElement {
+  return fixture.nativeElement.querySelector('.feed-panel') as HTMLElement;
+}
+
+/** jsdom ignores `scrollTop` on unfocused elements; this makes it a plain value. */
+function setScrollTop(element: HTMLElement, value: number): void {
+  Object.defineProperty(element, 'scrollTop', { value, writable: true, configurable: true });
+}
+
+function clickFirstCard(fixture: ComponentFixture<FeedPage>): void {
+  (fixture.nativeElement.querySelector('app-review-card') as HTMLElement).click();
+}
+
 describe('FeedPage', () => {
-  beforeEach(() => localStorage.clear());
-  afterEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   it('shows the skeleton while the first page is loading', () => {
     configureRoute({});
@@ -78,8 +114,7 @@ describe('FeedPage', () => {
 
     (fixture.nativeElement.querySelector('.feed-more') as HTMLButtonElement).click();
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    fixture.detectChanges();
+    await settle(fixture);
 
     expect(cards(fixture)).toBe(24);
   });
@@ -94,8 +129,7 @@ describe('FeedPage', () => {
       }
 
       button.click();
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      fixture.detectChanges();
+      await settle(fixture);
     }
 
     expect(cards(fixture)).toBe(48);
@@ -152,5 +186,74 @@ describe('FeedPage', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-empty-state')).toBeTruthy();
+  });
+
+  it('writes the filters to the URL when they change', async () => {
+    const fixture = await render({});
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    TestBed.inject(FeedStore).setFilters({ q: 'duna', sort: 'popular' });
+    fixture.detectChanges();
+
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith([], {
+      relativeTo: expect.anything(),
+      queryParams: { q: 'duna', sort: 'popular' },
+      replaceUrl: true,
+    });
+  });
+
+  it('never navigates for filters the URL already has', async () => {
+    const fixture = await render({ type: 'Book' });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    TestBed.inject(FeedStore).setFilters({ q: '', contentType: 'Book', sort: 'recent' });
+    fixture.detectChanges();
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('forgets the scroll position when the filters change', async () => {
+    const fixture = await render({});
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    setScrollTop(panelOf(fixture), 640);
+    clickFirstCard(fixture);
+
+    expect(TestBed.inject(ScrollMemoryService).consume(FEED_KEY)).toBe(640);
+
+    TestBed.inject(FeedStore).setFilters({ q: 'duna', sort: 'recent' });
+    fixture.detectChanges();
+
+    expect(TestBed.inject(ScrollMemoryService).consume(FILTERED_KEY)).toBeNull();
+  });
+
+  it('restores the scroll position when the cached feed comes back', async () => {
+    const first = await render({});
+    setScrollTop(panelOf(first), 640);
+    clickFirstCard(first);
+    first.destroy();
+
+    const second = TestBed.createComponent(FeedPage);
+    second.detectChanges();
+    await settle(second);
+
+    expect(cards(second)).toBe(12);
+    expect(panelOf(second).scrollTop).toBe(640);
+  });
+
+  it('does not restore the scroll position when the store had to reload', async () => {
+    const first = await render({});
+    setScrollTop(panelOf(first), 640);
+    clickFirstCard(first);
+    TestBed.inject(FeedStore).markStale();
+    first.destroy();
+
+    const second = TestBed.createComponent(FeedPage);
+    second.detectChanges();
+    await settle(second);
+
+    expect(cards(second)).toBe(12);
+    expect(panelOf(second).scrollTop).toBe(0);
   });
 });

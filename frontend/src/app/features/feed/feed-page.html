@@ -24,7 +24,7 @@
         } @else {
           <div class="feed-list">
             @for (post of posts(); track post.id) {
-              <app-review-card [post]="post" />
+              <app-review-card [post]="post" (click)="rememberScroll()" />
             }
           </div>
 
