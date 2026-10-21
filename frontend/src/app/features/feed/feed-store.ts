@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { ApiError, toApiError } from '@app/core/api/api-error';
 import { REVIEW_API } from '@app/core/api/review-api';
 import { FeedFilters, Post } from '@app/core/models/post';
+import { PostCacheService } from '@app/features/posts/post-cache.service';
 import { environment } from '../../../environments/environment';
 import { DEFAULT_FEED_FILTERS, feedFiltersEqual } from './feed-query';
 
@@ -29,6 +30,7 @@ const STALE_AFTER_MS = 60_000;
 @Injectable({ providedIn: 'root' })
 export class FeedStore {
   private readonly api = inject(REVIEW_API);
+  private readonly cache = inject(PostCacheService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly _posts = signal<Post[]>([]);
@@ -42,7 +44,7 @@ export class FeedStore {
   private request?: Subscription;
   private loadedAt = 0;
 
-  readonly posts = this._posts.asReadonly();
+  readonly posts = computed(() => this._posts().map((post) => this.cache.merge(post)));
   readonly status = this._status.asReadonly();
   readonly hasNext = this._hasNext.asReadonly();
   readonly totalElements = this._total.asReadonly();
@@ -161,6 +163,7 @@ export class FeedStore {
       })
       .subscribe({
         next: (response) => {
+          this.cache.sync(response.content);
           this._posts.set(
             reset ? response.content : dedupeById([...this._posts(), ...response.content]),
           );

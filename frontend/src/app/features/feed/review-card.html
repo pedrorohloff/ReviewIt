@@ -20,13 +20,22 @@
     <p class="card__excerpt">{{ post().content }}</p>
 
     <footer class="card__foot">
-      <span class="stat">
-        <app-icon name="heart" [size]="16" />
-        <span class="sr-only">
-          {{ post().likeCount }} {{ post().likeCount === 1 ? 'curtida' : 'curtidas' }}
-        </span>
-        <span aria-hidden="true">{{ post().likeCount }}</span>
-      </span>
+      <button
+        type="button"
+        class="stat stat--like"
+        [class.stat--liked]="post().likedByMe"
+        [attr.aria-pressed]="post().likedByMe ? 'true' : 'false'"
+        [attr.aria-label]="likeLabel()"
+        (click)="toggleLike($event)"
+      >
+        <app-icon
+          name="heart"
+          [size]="16"
+          [strokeWidth]="post().likedByMe ? 2.25 : 1.75"
+          [filled]="!!post().likedByMe"
+        />
+        <span>{{ post().likeCount }}</span>
+      </button>
 
       <span class="stat">
         <app-icon name="message" [size]="16" />

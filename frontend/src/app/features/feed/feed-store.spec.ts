@@ -3,6 +3,7 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 import { ApiError } from '@app/core/api/api-error';
 import { REVIEW_API, ReviewApi } from '@app/core/api/review-api';
 import { ListPostsParams, Post, PostPage } from '@app/core/models/post';
+import { PostCacheService } from '@app/features/posts/post-cache.service';
 import { environment } from '../../../environments/environment';
 import { DEFAULT_FEED_FILTERS } from './feed-query';
 import { FeedStore } from './feed-store';
@@ -43,6 +44,18 @@ function setup(impl: ListPostsImpl) {
 const FIRST_PAGE_PARAMS = { page: 0, pageSize: environment.pageSize, q: '', sort: 'recent' };
 
 describe('FeedStore', () => {
+  it('renders counts changed on another screen without refetching', () => {
+    const { store, listPosts } = setup(() => of(postPage([makePost('1')])));
+
+    store.ensureLoaded(DEFAULT_FEED_FILTERS);
+
+    const cache = TestBed.inject(PostCacheService);
+    cache.patch('1', { likeCount: 148, likedByMe: true });
+
+    expect(store.posts()[0]).toMatchObject({ likeCount: 148, likedByMe: true });
+    expect(listPosts).toHaveBeenCalledTimes(1);
+  });
+
   it('loads the first page with the configured page size', () => {
     const { store, listPosts } = setup(() =>
       of(postPage([makePost('1'), makePost('2')], { hasNext: true, totalPages: 4 })),

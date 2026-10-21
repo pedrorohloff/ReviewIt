@@ -103,6 +103,24 @@
   gap: 0.375rem;
 }
 
+.stat--like {
+  margin: -0.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-chip);
+  transition:
+    color 120ms ease-out,
+    background-color 120ms ease-out;
+}
+
+.stat--like:hover {
+  color: var(--color-ink-strong);
+  background: var(--color-surface-muted);
+}
+
+.stat--liked {
+  color: var(--color-danger);
+}
+
 .read-more {
   display: inline-flex;
   align-items: center;

@@ -25,7 +25,7 @@ export type IconName =
       [style.width.rem]="size() / 16"
       [style.height.rem]="size() / 16"
       viewBox="0 0 24 24"
-      fill="none"
+      [attr.fill]="filled() ? 'currentColor' : 'none'"
       stroke="currentColor"
       [attr.stroke-width]="strokeWidth()"
       stroke-linecap="round"
@@ -50,4 +50,6 @@ export class Icon {
   readonly name = input.required<IconName>();
   readonly size = input(20);
   readonly strokeWidth = input(1.75);
+  /** Fills the shape as well as stroking it (used by the liked heart). */
+  readonly filled = input(false);
 }
