@@ -12,6 +12,15 @@ test.describe('feed shell', () => {
     await expect(page.locator('app-feed-skeleton')).toHaveCount(0);
 
     const viewport = page.viewportSize()!;
+    const searchBox = await page.getByLabel('Pesquisar reviews').boundingBox();
+    expect(searchBox).not.toBeNull();
+    expect(Math.abs(searchBox!.x + searchBox!.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(
+      1,
+    );
+    expect(searchBox!.width).toBeLessThanOrEqual(640);
+    expect(searchBox!.x).toBeGreaterThanOrEqual(100);
+    expect(searchBox!.x + searchBox!.width).toBeLessThanOrEqual(viewport.width - 100);
+
     const avatar = page.locator('app-top-bar').getByRole('img', { name: 'Foto de Maria Rohls' });
     await expect(avatar).toBeVisible();
 
