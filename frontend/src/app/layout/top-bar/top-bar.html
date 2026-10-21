@@ -33,6 +33,9 @@
   <app-search-field />
 
   <div class="topbar__avatar">
-    <app-avatar name="Maria Rohls" [size]="52" />
+    @if (auth.isDemo()) {
+      <span class="demo-badge">modo demonstração</span>
+    }
+    <app-avatar [name]="username()" [size]="52" />
   </div>
 </header>
