@@ -1,5 +1,7 @@
 .card {
   position: relative;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 15rem;
   display: grid;
   grid-template-columns: 6.5rem minmax(0, 1fr);
   gap: 1.25rem;
@@ -192,5 +194,15 @@
   .card__time {
     width: 100%;
     margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-card);
   }
 }
