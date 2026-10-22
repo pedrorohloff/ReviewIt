@@ -156,6 +156,7 @@ function profile(id: string, username: string, role: Profile['role']): Profile {
     status: 'Active',
     suspendedUntil: null,
     createdAt: PROFILE_CREATED,
+    onboarded: true,
   };
 }
 

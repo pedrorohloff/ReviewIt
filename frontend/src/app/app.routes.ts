@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { moderatorGuard } from './core/auth/moderator.guard';
+import { onboardingGuard } from './core/auth/onboarding.guard';
 import { unsavedChangesGuard } from './features/posts/unsaved-changes.guard';
 import { AppShell } from './layout/app-shell/app-shell';
 import { ErrorPage } from './pages/error-page';
@@ -12,8 +13,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login-page').then((m) => m.LoginPage),
   },
   {
+    path: 'onboarding',
+    title: 'Complete seu perfil · ReviewIt',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/onboarding/onboarding-page').then((m) => m.OnboardingPage),
+  },
+  {
     path: '',
     component: AppShell,
+    canActivateChild: [onboardingGuard],
     children: [
       {
         path: '',

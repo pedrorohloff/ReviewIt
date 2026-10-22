@@ -44,6 +44,7 @@ export abstract class ReviewApi {
   abstract toggleCommentLike(commentId: string): Observable<LikeResult>;
 
   abstract getProfile(id: string): Observable<Profile>;
+  abstract createProfile(input: ProfileInput): Observable<Profile>;
   abstract updateProfile(id: string, input: ProfileInput): Observable<Profile>;
 
   abstract listNotifications(page: number, pageSize: number): Observable<NotificationPage>;

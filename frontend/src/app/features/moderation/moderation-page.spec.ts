@@ -80,6 +80,7 @@ function makeProfile(id: string): Profile {
     status: 'Active',
     suspendedUntil: null,
     createdAt: '2026-01-15T12:00:00Z',
+    onboarded: true,
   };
 }
 

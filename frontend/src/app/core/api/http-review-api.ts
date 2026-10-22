@@ -100,6 +100,10 @@ export class HttpReviewApi extends ReviewApi {
     return this.http.get<Profile>(`${this.baseUrl}/profiles/${id}`);
   }
 
+  createProfile(input: ProfileInput): Observable<Profile> {
+    return this.http.post<Profile>(`${this.baseUrl}/profiles`, input);
+  }
+
   updateProfile(id: string, input: ProfileInput): Observable<Profile> {
     return this.http.put<Profile>(`${this.baseUrl}/profiles/${id}`, input);
   }

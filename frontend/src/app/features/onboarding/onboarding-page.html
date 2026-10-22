@@ -1,0 +1,61 @@
+<main class="onboarding">
+  <section class="onboarding__card" aria-labelledby="onboarding-title">
+    <p class="onboarding__brand">ReviewIt</p>
+    <p class="onboarding__badge">Primeiro acesso</p>
+    <h1 id="onboarding-title" class="onboarding__title">Escolha como você quer aparecer.</h1>
+    <p class="onboarding__copy">
+      Seu espaço já está pronto. Confirme o nome que vai aparecer nas suas reviews e nos
+      comentários — você pode mudar depois no perfil.
+    </p>
+
+    <form class="onboarding__form" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="onboarding__label" for="onboarding-username">Nome de usuário</label>
+      <input
+        id="onboarding-username"
+        class="onboarding__input"
+        type="text"
+        formControlName="username"
+        autocomplete="nickname"
+        maxlength="50"
+        aria-describedby="onboarding-username-hint"
+        [attr.aria-invalid]="form.controls.username.touched && form.controls.username.invalid"
+      />
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <p class="onboarding__error" role="alert">Use entre 3 e 50 caracteres.</p>
+      } @else {
+        <p class="onboarding__hint" id="onboarding-username-hint">
+          Entre 3 e 50 caracteres. É assim que seu nome aparece nas reviews.
+        </p>
+      }
+
+      <label class="onboarding__label" for="onboarding-avatar">
+        URL do avatar <span class="onboarding__optional">(opcional)</span>
+      </label>
+      <input
+        id="onboarding-avatar"
+        class="onboarding__input"
+        type="url"
+        formControlName="avatarUrl"
+        autocomplete="photo"
+        maxlength="500"
+        placeholder="https://…"
+        aria-describedby="onboarding-avatar-hint"
+      />
+      <p class="onboarding__hint" id="onboarding-avatar-hint">
+        Em branco, usamos as iniciais do seu nome.
+      </p>
+
+      @if (error(); as message) {
+        <p class="onboarding__error" role="alert">{{ message }}</p>
+      }
+
+      <button type="submit" class="onboarding__submit" [disabled]="saving()">
+        {{ saving() ? 'Salvando…' : 'Continuar para o feed' }}
+      </button>
+    </form>
+
+    <button type="button" class="onboarding__link" (click)="signOut()">
+      Entrar com outra conta
+    </button>
+  </section>
+</main>

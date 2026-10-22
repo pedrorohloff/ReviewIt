@@ -44,4 +44,24 @@ describe('AuthService (demo mode)', () => {
     expect(auth.isApiRequest('/api/v1/posts')).toBe(true);
     expect(auth.isApiRequest('https://example.supabase.co/auth/v1/token')).toBe(false);
   });
+
+  it('mirrors an own-profile save and clears the onboarding flag', () => {
+    const auth = TestBed.inject(AuthService);
+
+    auth.applyProfile({
+      id: DEMO_USER.id,
+      username: 'Maria Atualizada',
+      avatarUrl: 'https://example.com/maria.png',
+      role: 'Admin',
+      status: 'Active',
+      suspendedUntil: null,
+      createdAt: '2026-01-01T00:00:00Z',
+      onboarded: true,
+    });
+
+    expect(auth.user()?.username).toBe('Maria Atualizada');
+    expect(auth.user()?.avatarUrl).toBe('https://example.com/maria.png');
+    expect(auth.user()?.needsProfile).toBe(false);
+    expect(auth.user()?.needsOnboarding).toBe(false);
+  });
 });

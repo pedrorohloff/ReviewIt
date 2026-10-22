@@ -262,6 +262,36 @@ export class MockReviewApi extends ReviewApi {
     return this.respond(() => ({ ...this.requireProfile(id) }));
   }
 
+  createProfile(input: ProfileInput): Observable<Profile> {
+    return this.respond(() => {
+      const existing = this.state.profiles.find((profile) => profile.id === DEMO_USER.id);
+
+      if (existing) {
+        existing.username = input.username;
+        existing.avatarUrl = input.avatarUrl;
+        existing.onboarded = true;
+        this.mirrorProfile(existing.id, input);
+        this.persist();
+        return { ...existing };
+      }
+
+      const created: Profile = {
+        id: DEMO_USER.id,
+        username: input.username,
+        avatarUrl: input.avatarUrl,
+        role: 'Admin',
+        status: 'Active',
+        suspendedUntil: null,
+        createdAt: new Date().toISOString(),
+        onboarded: true,
+      };
+      this.state.profiles.push(created);
+      this.mirrorProfile(created.id, input);
+      this.persist();
+      return { ...created };
+    });
+  }
+
   updateProfile(id: string, input: ProfileInput): Observable<Profile> {
     return this.respond(() => {
       if (id !== DEMO_USER.id) {
@@ -271,24 +301,28 @@ export class MockReviewApi extends ReviewApi {
       const profile = this.requireProfile(id);
       profile.username = input.username;
       profile.avatarUrl = input.avatarUrl;
-
-      for (const post of this.state.posts) {
-        if (post.author.id === id) {
-          post.author.username = input.username;
-          post.author.avatarUrl = input.avatarUrl;
-        }
-      }
-
-      for (const comment of this.state.comments) {
-        if (comment.author.id === id) {
-          comment.author.username = input.username;
-          comment.author.avatarUrl = input.avatarUrl;
-        }
-      }
+      profile.onboarded = true;
+      this.mirrorProfile(id, input);
 
       this.persist();
       return { ...profile };
     });
+  }
+
+  private mirrorProfile(id: string, input: ProfileInput): void {
+    for (const post of this.state.posts) {
+      if (post.author.id === id) {
+        post.author.username = input.username;
+        post.author.avatarUrl = input.avatarUrl;
+      }
+    }
+
+    for (const comment of this.state.comments) {
+      if (comment.author.id === id) {
+        comment.author.username = input.username;
+        comment.author.avatarUrl = input.avatarUrl;
+      }
+    }
   }
 
   listNotifications(page: number, pageSize: number): Observable<NotificationPage> {

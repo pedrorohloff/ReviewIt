@@ -114,6 +114,8 @@ export class AuthService {
       avatarUrl: profile.avatarUrl,
       role: profile.role,
       status: profile.status,
+      needsProfile: false,
+      needsOnboarding: profile.onboarded === false,
     });
   }
 
@@ -175,11 +177,13 @@ export class AuthService {
         avatarUrl: profile.avatarUrl,
         role: profile.role,
         status: profile.status,
+        needsProfile: false,
+        needsOnboarding: profile.onboarded === false,
       });
       return;
     }
 
-    this._user.set({ ...fallback, needsProfile: true });
+    this._user.set({ ...fallback, needsProfile: true, needsOnboarding: false });
   }
 
   private async fetchProfile(id: string): Promise<Profile | null> {

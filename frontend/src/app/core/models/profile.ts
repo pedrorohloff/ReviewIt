@@ -13,6 +13,7 @@ export interface Profile extends ProfileSummary {
   status: AccountStatus;
   suspendedUntil: string | null;
   createdAt: string;
+  onboarded: boolean;
 }
 
 export interface ProfileInput {

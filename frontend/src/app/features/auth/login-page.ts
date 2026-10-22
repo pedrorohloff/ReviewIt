@@ -32,6 +32,15 @@ export class LoginPage {
         return;
       }
 
+      const user = this.auth.user();
+
+      if (user?.needsProfile || user?.needsOnboarding) {
+        void this.router.navigate(['/onboarding'], {
+          queryParams: { next: this.nextUrl },
+        });
+        return;
+      }
+
       void this.router.navigateByUrl(this.nextUrl);
     });
   }

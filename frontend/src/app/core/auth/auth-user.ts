@@ -8,4 +8,5 @@ export interface AuthUser {
   role: Role;
   status: AccountStatus;
   needsProfile?: boolean;
+  needsOnboarding?: boolean;
 }
