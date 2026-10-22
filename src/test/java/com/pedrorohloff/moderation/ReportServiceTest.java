@@ -11,6 +11,7 @@ import com.pedrorohloff.moderation.dto.ReportDTO;
 import com.pedrorohloff.moderation.dto.ReportPageDTO;
 import com.pedrorohloff.moderation.dto.ReportRequestDTO;
 import com.pedrorohloff.moderation.enums.ActionType;
+import com.pedrorohloff.moderation.enums.ReportStatus;
 import com.pedrorohloff.post.Post;
 import com.pedrorohloff.post.PostRepository;
 import com.pedrorohloff.profile.Profile;
@@ -77,6 +78,26 @@ class ReportServiceTest extends AbstractIntegrationTest {
         assertNotNull(result);
         assertTrue(result.totalElements() >= 1);
         assertFalse(result.hasNext());
+    }
+
+    @Test
+    void shouldFilterReportsByStatus() {
+        Profile reporter = profileRepository.save(TestDataFactory.createProfile("reporterStatus"));
+        Post post = postRepository.save(TestDataFactory.createPost(reporter.getId()));
+        var pending = reportRepository.save(TestDataFactory.createReport(
+                reporter.getId(), post.getId(), null, "Pending report", ReportStatus.PENDING));
+        var resolved = reportRepository.save(TestDataFactory.createReport(
+                reporter.getId(), post.getId(), null, "Resolved report", ReportStatus.RESOLVED));
+
+        ReportPageDTO pendingPage = reportService.findAll(0, 100, "Pending");
+        ReportPageDTO resolvedPage = reportService.findAll(0, 100, "Resolved");
+
+        assertTrue(pendingPage.content().stream().allMatch(report -> "Pending".equals(report.status())));
+        assertTrue(resolvedPage.content().stream().allMatch(report -> "Resolved".equals(report.status())));
+        assertTrue(pendingPage.content().stream().anyMatch(report -> pending.getId().equals(report.id())));
+        assertTrue(resolvedPage.content().stream().anyMatch(report -> resolved.getId().equals(report.id())));
+        assertFalse(resolvedPage.content().stream().anyMatch(report -> pending.getId().equals(report.id())));
+        assertThrows(IllegalArgumentException.class, () -> reportService.findAll(0, 10, "Banana"));
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.pedrorohloff.AbstractIntegrationTest;
 import com.pedrorohloff.TestDataFactory;
 import com.pedrorohloff.moderation.dto.ApplyActionRequestDTO;
 import com.pedrorohloff.moderation.dto.ReportRequestDTO;
+import com.pedrorohloff.moderation.enums.ReportStatus;
 import com.pedrorohloff.post.Post;
 import com.pedrorohloff.post.PostRepository;
 import com.pedrorohloff.profile.Profile;
@@ -19,6 +20,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
@@ -80,6 +85,37 @@ class ModerationControllerTest extends AbstractIntegrationTest {
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    void shouldFilterReportsByStatus() throws Exception {
+        Profile reporter = profileRepository.save(TestDataFactory.createProfile("reporterFilter"));
+        Post post = postRepository.save(TestDataFactory.createPost(reporter.getId()));
+        var pending = reportRepository.save(TestDataFactory.createReport(
+                reporter.getId(), post.getId(), null, "Pending report", ReportStatus.PENDING));
+        var resolved = reportRepository.save(TestDataFactory.createReport(
+                reporter.getId(), post.getId(), null, "Resolved report", ReportStatus.RESOLVED));
+
+        mockMvc.perform(get("/api/v1/reports")
+                        .param("page", "0")
+                        .param("pageSize", "100")
+                        .param("status", "Pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].status", everyItem(is("Pending"))))
+                .andExpect(jsonPath("$.content[*].id", hasItem(pending.getId().toString())))
+                .andExpect(jsonPath("$.content[*].id", not(hasItem(resolved.getId().toString()))));
+
+        mockMvc.perform(get("/api/v1/reports")
+                        .param("page", "0")
+                        .param("pageSize", "100")
+                        .param("status", "Resolved"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].status", everyItem(is("Resolved"))))
+                .andExpect(jsonPath("$.content[*].id", hasItem(resolved.getId().toString())))
+                .andExpect(jsonPath("$.content[*].id", not(hasItem(pending.getId().toString()))));
+
+        mockMvc.perform(get("/api/v1/reports").param("status", "Banana"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

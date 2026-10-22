@@ -78,8 +78,15 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public ReportPageDTO findAll(int page, int pageSize) {
+        return findAll(page, pageSize, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ReportPageDTO findAll(int page, int pageSize, String status) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<Report> reportPage = reportRepository.findAll(pageable);
+        Page<Report> reportPage = status == null || status.isBlank()
+                ? reportRepository.findAll(pageable)
+                : reportRepository.findByStatus(ReportStatus.fromValue(status), pageable);
 
         var reports = reportPage.getContent().stream()
                 .map(reportMapper::toDTO)

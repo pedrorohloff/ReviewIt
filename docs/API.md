@@ -79,7 +79,7 @@ JWT `sub`; `false` for anonymous requests). `GET /posts/{id}` exposes the same r
 | Method | Path | Description |
 |---|---|---|
 | POST | `/reports` | Create report |
-| GET | `/reports?page={page}&pageSize={pageSize}` | List reports (paginated) |
+| GET | `/reports?page={page}&pageSize={pageSize}&status={Pending\|Resolved}` | List reports (paginated, optional status filter) |
 | POST | `/reports/{reportId}/action` | Apply moderation action |
 
 ### Notifications
