@@ -12,8 +12,8 @@
 .composer__field {
   display: block;
   width: 100%;
-  min-height: 4.5rem;
-  max-height: 12rem;
+  min-height: 5.625rem;
+  max-height: 12.75rem;
   padding: 0.625rem 0.75rem;
   border: 1.5px solid var(--color-border-strong);
   border-radius: var(--radius-control);
