@@ -3,18 +3,20 @@ import { Page, expect, test } from '@playwright/test';
 /** The demo dataset has 48 posts and the feed loads 12 per page. */
 const PAGE_SIZE = 12;
 
-/** Clicks a card that is fully visible at the current scroll, without scrolling. */
+/**
+ * Clicks a card that is fully visible at the current scroll, without letting
+ * Playwright scroll (which would move the offset being asserted).
+ */
 async function clickVisibleCard(page: Page): Promise<number> {
   return page.evaluate(() => {
     const panel = document.querySelector('.feed-panel') as HTMLElement;
     const rect = panel.getBoundingClientRect();
-    const target = document.elementFromPoint(
-      rect.x + rect.width / 2,
-      rect.y + rect.height / 2,
-    ) as HTMLElement | null;
-    const link = target?.closest('app-review-card')?.querySelector('.card__link') as
-      | HTMLElement
-      | null;
+    const cards = Array.from(document.querySelectorAll('app-review-card'));
+    const visible = cards.find((card) => {
+      const box = card.getBoundingClientRect();
+      return box.top >= rect.top && box.bottom <= rect.bottom && box.height > 0;
+    });
+    const link = (visible ?? cards.at(0))?.querySelector('.card__link') as HTMLElement | null;
 
     link?.click();
     return panel.scrollTop;
