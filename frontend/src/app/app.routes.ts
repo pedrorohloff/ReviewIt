@@ -3,6 +3,7 @@ import { authGuard } from './core/auth/auth.guard';
 import { moderatorGuard } from './core/auth/moderator.guard';
 import { unsavedChangesGuard } from './features/posts/unsaved-changes.guard';
 import { AppShell } from './layout/app-shell/app-shell';
+import { ErrorPage } from './pages/error-page';
 
 export const routes: Routes = [
   {
@@ -60,6 +61,11 @@ export const routes: Routes = [
         canActivate: [authGuard, moderatorGuard],
         loadComponent: () =>
           import('./features/moderation/moderation-page').then((m) => m.ModerationPage),
+      },
+      {
+        path: 'error',
+        title: 'Erro · ReviewIt',
+        component: ErrorPage,
       },
       {
         path: '403',

@@ -1,7 +1,10 @@
 <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
 
 <div class="shell">
-  <app-top-bar />
+  <div class="shell__top">
+    <app-top-bar />
+    <app-offline-banner />
+  </div>
 
   <main id="main-content" class="shell__main" tabindex="-1">
     <router-outlet />

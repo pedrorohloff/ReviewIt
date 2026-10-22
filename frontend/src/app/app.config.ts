@@ -6,7 +6,12 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+  withNavigationErrorHandler,
+} from '@angular/router';
 import { HttpReviewApi } from './core/api/http-review-api';
 import { MockReviewApi } from './core/api/mock-review-api';
 import { REVIEW_API } from './core/api/review-api';
@@ -14,6 +19,7 @@ import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { APP_CONFIG } from './core/config/app-config';
 import { GlobalErrorHandler } from './core/error-handler';
+import { handleNavigationError } from './core/navigation-error-handler';
 import { problemInterceptor } from './core/http/problem.interceptor';
 import { routes } from './app.routes';
 
@@ -29,6 +35,7 @@ export const appConfig: ApplicationConfig = {
         scrollPositionRestoration: 'disabled',
         anchorScrolling: 'enabled',
       }),
+      withNavigationErrorHandler(handleNavigationError),
     ),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     HttpReviewApi,
