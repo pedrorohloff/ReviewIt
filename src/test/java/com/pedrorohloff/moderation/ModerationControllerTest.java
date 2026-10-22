@@ -77,14 +77,25 @@ class ModerationControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldListReports() throws Exception {
         Profile reporter = profileRepository.save(TestDataFactory.createProfile("reporter3"));
+        Profile moderator = profileRepository.save(TestDataFactory.createProfile("listMod", Role.MODERATOR));
         Post post = postRepository.save(TestDataFactory.createPost(reporter.getId()));
         reportRepository.save(TestDataFactory.createReport(reporter.getId(), post.getId()));
 
         mockMvc.perform(get("/api/v1/reports")
+                        .requestAttr("currentUserId", moderator.getId())
                         .param("page", "0")
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    void shouldForbidReportListingForRegularUsers() throws Exception {
+        Profile regular = profileRepository.save(TestDataFactory.createProfile("regularList"));
+
+        mockMvc.perform(get("/api/v1/reports")
+                        .requestAttr("currentUserId", regular.getId()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -95,8 +106,10 @@ class ModerationControllerTest extends AbstractIntegrationTest {
                 reporter.getId(), post.getId(), null, "Pending report", ReportStatus.PENDING));
         var resolved = reportRepository.save(TestDataFactory.createReport(
                 reporter.getId(), post.getId(), null, "Resolved report", ReportStatus.RESOLVED));
+        Profile moderator = profileRepository.save(TestDataFactory.createProfile("filterMod", Role.MODERATOR));
 
         mockMvc.perform(get("/api/v1/reports")
+                        .requestAttr("currentUserId", moderator.getId())
                         .param("page", "0")
                         .param("pageSize", "100")
                         .param("status", "Pending"))
@@ -106,6 +119,7 @@ class ModerationControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.content[*].id", not(hasItem(resolved.getId().toString()))));
 
         mockMvc.perform(get("/api/v1/reports")
+                        .requestAttr("currentUserId", moderator.getId())
                         .param("page", "0")
                         .param("pageSize", "100")
                         .param("status", "Resolved"))
@@ -114,7 +128,9 @@ class ModerationControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.content[*].id", hasItem(resolved.getId().toString())))
                 .andExpect(jsonPath("$.content[*].id", not(hasItem(pending.getId().toString()))));
 
-        mockMvc.perform(get("/api/v1/reports").param("status", "Banana"))
+        mockMvc.perform(get("/api/v1/reports")
+                        .requestAttr("currentUserId", moderator.getId())
+                        .param("status", "Banana"))
                 .andExpect(status().isBadRequest());
     }
 

@@ -70,14 +70,22 @@ class ReportServiceTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnPaginatedListOfReports() {
         Profile reporter = profileRepository.save(TestDataFactory.createProfile("reporter3"));
+        Profile moderator = profileRepository.save(TestDataFactory.createProfile("listMod", Role.MODERATOR));
         Post post = postRepository.save(TestDataFactory.createPost(reporter.getId()));
         reportRepository.save(TestDataFactory.createReport(reporter.getId(), post.getId()));
 
-        ReportPageDTO result = reportService.findAll(0, 10);
+        ReportPageDTO result = reportService.findAll(moderator.getId(), 0, 10, null);
 
         assertNotNull(result);
         assertTrue(result.totalElements() >= 1);
         assertFalse(result.hasNext());
+    }
+
+    @Test
+    void shouldForbidReportListingForRegularUsers() {
+        Profile reporter = profileRepository.save(TestDataFactory.createProfile("reporterListForbidden"));
+
+        assertThrows(ForbiddenException.class, () -> reportService.findAll(reporter.getId(), 0, 10, null));
     }
 
     @Test
@@ -88,16 +96,17 @@ class ReportServiceTest extends AbstractIntegrationTest {
                 reporter.getId(), post.getId(), null, "Pending report", ReportStatus.PENDING));
         var resolved = reportRepository.save(TestDataFactory.createReport(
                 reporter.getId(), post.getId(), null, "Resolved report", ReportStatus.RESOLVED));
+        Profile moderator = profileRepository.save(TestDataFactory.createProfile("filterMod", Role.MODERATOR));
 
-        ReportPageDTO pendingPage = reportService.findAll(0, 100, "Pending");
-        ReportPageDTO resolvedPage = reportService.findAll(0, 100, "Resolved");
+        ReportPageDTO pendingPage = reportService.findAll(moderator.getId(), 0, 100, "Pending");
+        ReportPageDTO resolvedPage = reportService.findAll(moderator.getId(), 0, 100, "Resolved");
 
         assertTrue(pendingPage.content().stream().allMatch(report -> "Pending".equals(report.status())));
         assertTrue(resolvedPage.content().stream().allMatch(report -> "Resolved".equals(report.status())));
         assertTrue(pendingPage.content().stream().anyMatch(report -> pending.getId().equals(report.id())));
         assertTrue(resolvedPage.content().stream().anyMatch(report -> resolved.getId().equals(report.id())));
         assertFalse(resolvedPage.content().stream().anyMatch(report -> pending.getId().equals(report.id())));
-        assertThrows(IllegalArgumentException.class, () -> reportService.findAll(0, 10, "Banana"));
+        assertThrows(IllegalArgumentException.class, () -> reportService.findAll(moderator.getId(), 0, 10, "Banana"));
     }
 
     @Test

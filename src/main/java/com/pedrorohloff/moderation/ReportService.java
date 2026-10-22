@@ -77,12 +77,9 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReportPageDTO findAll(int page, int pageSize) {
-        return findAll(page, pageSize, null);
-    }
+    public ReportPageDTO findAll(UUID requesterId, int page, int pageSize, String status) {
+        requireModerator(requesterId);
 
-    @Transactional(readOnly = true)
-    public ReportPageDTO findAll(int page, int pageSize, String status) {
         Pageable pageable = PageRequest.of(page, pageSize);
         Page<Report> reportPage = status == null || status.isBlank()
                 ? reportRepository.findAll(pageable)
@@ -102,12 +99,7 @@ public class ReportService {
 
     @Transactional
     public ModerationActionDTO applyAction(UUID reportId, UUID moderatorId, ApplyActionRequestDTO dto) {
-        Profile moderator = profileRepository.findById(moderatorId)
-                .orElseThrow(() -> new RecordNotFoundException("Profile", moderatorId));
-
-        if (moderator.getRole() != Role.MODERATOR && moderator.getRole() != Role.ADMIN) {
-            throw new ForbiddenException("Only moderators can apply actions");
-        }
+        requireModerator(moderatorId);
 
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RecordNotFoundException("Report", reportId));
@@ -133,6 +125,15 @@ public class ReportService {
         reportRepository.save(report);
 
         return moderationActionMapper.toDTO(moderationActionRepository.save(action));
+    }
+
+    private void requireModerator(UUID profileId) {
+        Profile profile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new RecordNotFoundException("Profile", profileId));
+
+        if (profile.getRole() != Role.MODERATOR && profile.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only moderators can access reports");
+        }
     }
 
     private UUID resolveTargetUserId(Report report) {

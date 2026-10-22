@@ -34,10 +34,11 @@ public class ModerationController {
     }
 
     @GetMapping
-    public ReportPageDTO findAll(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
+    public ReportPageDTO findAll(@RequestAttribute("currentUserId") UUID currentUserId,
+                                 @RequestParam(defaultValue = "0") @PositiveOrZero int page,
                                  @RequestParam(defaultValue = "10") @Positive @Max(100) int pageSize,
                                  @RequestParam(required = false) String status) {
-        return reportService.findAll(page, pageSize, status);
+        return reportService.findAll(currentUserId, page, pageSize, status);
     }
 
     @PostMapping("/{reportId}/action")
