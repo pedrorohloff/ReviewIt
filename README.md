@@ -54,7 +54,7 @@ Spring Boot reads `.env.properties` from the project root
 
 Hosting platforms inject `PORT`; the app maps it with `server.port=${PORT:8080}`.
 The backend accepts both RSA and ECDSA Supabase signing keys and caches the JWKS
-for five minutes, refreshing it when an unknown `kid` arrives. Legacy HS256
+for five minutes, refreshing it (throttled) when an unknown `kid` arrives. Legacy HS256
 shared-secret tokens are not accepted; use an asymmetric signing key.
 
 ## Running the backend

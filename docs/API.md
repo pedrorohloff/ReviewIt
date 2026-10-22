@@ -9,7 +9,7 @@ This document summarizes the REST API surface. For the interactive UI, run the a
 All endpoints require a valid Supabase JWT, except `GET /api/v1/health`, Swagger UI and the OpenAPI JSON. Send `Authorization: Bearer <token>`. The JWT `sub` (user ID) is extracted by `JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
 
 The backend accepts RSA and ECDSA Supabase signing keys, caches the JWKS for five
-minutes and refreshes it when an unknown `kid` is presented. Legacy HS256 shared
+minutes and refreshes it (at most once every 30 seconds) when an unknown `kid` is presented. Legacy HS256 shared
 secrets are not accepted; use an asymmetric signing key and the public
 `.well-known/jwks.json` endpoint.
 

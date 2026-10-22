@@ -281,8 +281,8 @@ in `src/environments/environment.development.ts` (gitignored) or in
 - **Mobile Lighthouse performance** is 77 under simulated throttling on the
   static preview server (desktop local is 99). See the Step 8 log.
 - **JWKS is cached for five minutes** and refreshed when an unknown `kid`
-  arrives. A key rotation can therefore add one extra round trip to the first
-  request after rotation.
+  arrives, throttled to one forced refresh every 30 seconds. A key rotation can
+  therefore add one extra round trip to the first request after rotation.
 - **Single-jar deployment is not implemented.** The frontend is served by the
   static host; no SPA fallback is needed in Spring. The dev proxy remains the
   local development path.

@@ -38,6 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private String issuer;
 
     private static final long JWKS_TTL_MS = 5 * 60 * 1000L;
+    private static final long JWKS_FORCE_REFRESH_INTERVAL_MS = 30 * 1000L;
 
     private volatile JWKSet cachedJwks;
     private volatile long cachedAt;
@@ -77,8 +78,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String keyId = signedJWT.getHeader().getKeyID();
         JWK jwk = jwks().getKeyByKeyId(keyId);
-        if (jwk == null) {
-            // Supabase may rotate signing keys; force one refresh before giving up.
+        if (jwk == null
+                && System.currentTimeMillis() - cachedAt > JWKS_FORCE_REFRESH_INTERVAL_MS) {
+            // Supabase may have rotated signing keys. Throttle forced refreshes so
+            // unauthenticated requests with random kids cannot hammer the JWKS URL.
             jwk = refreshJwks().getKeyByKeyId(keyId);
         }
 
