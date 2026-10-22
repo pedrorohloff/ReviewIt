@@ -1,0 +1,76 @@
+<div class="account">
+  <button
+    #trigger
+    type="button"
+    class="account__trigger"
+    aria-haspopup="menu"
+    aria-controls="account-menu"
+    [attr.aria-expanded]="menuOpen()"
+    [attr.aria-label]="'Menu da conta de ' + username()"
+    (click)="toggle()"
+  >
+    <app-avatar [name]="username()" [size]="52" />
+  </button>
+
+  @if (menuOpen()) {
+    <div
+      #menu
+      id="account-menu"
+      class="account__menu"
+      role="menu"
+      aria-label="Conta"
+      tabindex="-1"
+      (keydown)="onMenuKeydown($event)"
+    >
+      <p class="account__identity" aria-hidden="true">
+        <span class="account__name">{{ username() }}</span>
+        <span class="account__status">{{ isDemo() ? 'Demonstração' : 'Sua conta' }}</span>
+      </p>
+
+      @if (user(); as currentUser) {
+        <a
+          class="account__item"
+          role="menuitem"
+          [routerLink]="['/profile', currentUser.id]"
+          (click)="close(false)"
+        >
+          <app-icon name="user" [size]="17" />
+          Meu perfil
+        </a>
+      }
+
+      @if (isAuthenticated()) {
+        <a class="account__item" role="menuitem" routerLink="/notifications" (click)="close(false)">
+          <app-icon name="bell" [size]="17" />
+          Notificações
+        </a>
+      }
+
+      <a class="account__item" role="menuitem" routerLink="/new" (click)="close(false)">
+        <app-icon name="plus" [size]="17" />
+        Nova review
+      </a>
+
+      @if (!isDemo()) {
+        <span class="account__separator" role="separator"></span>
+
+        @if (isAuthenticated()) {
+          <button
+            type="button"
+            class="account__item account__item--danger"
+            role="menuitem"
+            (click)="signOut()"
+          >
+            <app-icon name="log-out" [size]="17" />
+            Sair
+          </button>
+        } @else {
+          <a class="account__item" role="menuitem" routerLink="/login" (click)="close(false)">
+            <app-icon name="log-in" [size]="17" />
+            Entrar
+          </a>
+        }
+      }
+    </div>
+  }
+</div>

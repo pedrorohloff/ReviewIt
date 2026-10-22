@@ -3,7 +3,6 @@ import {
   Component,
   ElementRef,
   HostListener,
-  computed,
   inject,
   signal,
   viewChild,
@@ -12,13 +11,13 @@ import { AuthService } from '@app/core/auth/auth.service';
 import { FeedStore } from '@app/features/feed/feed-store';
 import { FilterPopover } from '@app/features/filters/filter-popover';
 import { SearchField } from '@app/features/search/search-field';
-import { Avatar } from '@app/shared/ui/avatar/avatar';
+import { AvatarMenu } from '@app/layout/avatar-menu/avatar-menu';
 import { Icon } from '@app/shared/ui/icon/icon';
 
 @Component({
   selector: 'app-top-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Avatar, FilterPopover, Icon, SearchField],
+  imports: [AvatarMenu, FilterPopover, Icon, SearchField],
   templateUrl: './top-bar.html',
   styleUrl: './top-bar.css',
 })
@@ -30,7 +29,6 @@ export class TopBar {
   protected readonly filterOpen = signal(false);
   protected readonly activeCount = this.feed.activeFilterCount;
   protected readonly activeFilterLabel = this.feed.activeFilterLabel;
-  protected readonly username = computed(() => this.auth.user()?.username ?? 'Visitante');
 
   toggleFilters(): void {
     this.filterOpen.update((open) => !open);
