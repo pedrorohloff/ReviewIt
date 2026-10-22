@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve --port 5173 --host 0.0.0.0",
     "build": "ng build",
+    "build:deploy": "npm run build && node scripts/write-config.mjs",
     "watch": "ng build --watch --configuration development",
     "preview": "http-server dist/frontend/browser -p 4173 -c-1",
     "test": "ng test --watch=false",

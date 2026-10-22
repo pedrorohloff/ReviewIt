@@ -3,18 +3,12 @@ import { Subscription } from 'rxjs';
 import { ApiError, toApiError } from '@app/core/api/api-error';
 import { REVIEW_API } from '@app/core/api/review-api';
 import { FeedFilters, Post } from '@app/core/models/post';
+import { APP_CONFIG } from '@app/core/config/app-config';
 import { PostCacheService } from '@app/features/posts/post-cache.service';
-import { environment } from '../../../environments/environment';
 import { DEFAULT_FEED_FILTERS, feedFiltersEqual } from './feed-query';
 
 export type FeedStatus =
-  | 'idle'
-  | 'loading'
-  | 'loadingMore'
-  | 'error'
-  | 'errorMore'
-  | 'empty'
-  | 'end';
+  'idle' | 'loading' | 'loadingMore' | 'error' | 'errorMore' | 'empty' | 'end';
 
 /** A cached feed older than this is reloaded on the next visit. */
 const STALE_AFTER_MS = 60_000;
@@ -31,6 +25,7 @@ const STALE_AFTER_MS = 60_000;
 export class FeedStore {
   private readonly api = inject(REVIEW_API);
   private readonly cache = inject(PostCacheService);
+  private readonly config = inject(APP_CONFIG);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly _posts = signal<Post[]>([]);
@@ -170,7 +165,7 @@ export class FeedStore {
     this.request = this.api
       .listPosts({
         page,
-        pageSize: environment.pageSize,
+        pageSize: this.config.pageSize,
         ...this._filters(),
       })
       .subscribe({

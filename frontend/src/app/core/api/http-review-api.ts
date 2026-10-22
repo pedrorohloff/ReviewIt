@@ -1,7 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import { Comment, CommentInput, CommentPage } from '@app/core/models/comment';
 import { LikeResult } from '@app/core/models/like';
 import { NotificationPage } from '@app/core/models/notification';
@@ -21,12 +20,14 @@ import {
   ReportPage,
   ReportStatus,
 } from '@app/core/models/report';
+import { APP_CONFIG } from '@app/core/config/app-config';
 import { ReviewApi } from './review-api';
 
 @Injectable()
 export class HttpReviewApi extends ReviewApi {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly config = inject(APP_CONFIG);
+  private readonly baseUrl = this.config.apiBaseUrl;
 
   listPosts(params: ListPostsParams): Observable<PostPage> {
     let query = new HttpParams().set('page', params.page).set('pageSize', params.pageSize);
@@ -66,10 +67,7 @@ export class HttpReviewApi extends ReviewApi {
     return this.http.delete<void>(`${this.baseUrl}/posts/${id}`);
   }
 
-  updateNotificationSettings(
-    id: string,
-    input: NotificationSettingsInput,
-  ): Observable<Post> {
+  updateNotificationSettings(id: string, input: NotificationSettingsInput): Observable<Post> {
     return this.http.patch<Post>(`${this.baseUrl}/posts/${id}/notification-settings`, input);
   }
 
@@ -125,11 +123,7 @@ export class HttpReviewApi extends ReviewApi {
     });
   }
 
-  listReports(
-    page: number,
-    pageSize: number,
-    status?: ReportStatus,
-  ): Observable<ReportPage> {
+  listReports(page: number, pageSize: number, status?: ReportStatus): Observable<ReportPage> {
     let params = new HttpParams().set('page', page).set('pageSize', pageSize);
 
     if (status) {
