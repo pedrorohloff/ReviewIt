@@ -19,6 +19,10 @@ export type IconName =
   | 'game'
   | 'chevron-down'
   | 'check'
+  | 'user'
+  | 'bell'
+  | 'log-out'
+  | 'log-in'
   | 'circle-check'
   | 'triangle-alert'
   | 'info';

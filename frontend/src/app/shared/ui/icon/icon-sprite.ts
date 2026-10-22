@@ -123,6 +123,30 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         <path d="M20 6 9 17l-5-5" />
       </symbol>
 
+      <symbol id="icon-user" viewBox="0 0 24 24">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </symbol>
+
+      <symbol id="icon-bell" viewBox="0 0 24 24">
+        <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+        <path
+          d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"
+        />
+      </symbol>
+
+      <symbol id="icon-log-out" viewBox="0 0 24 24">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" x2="9" y1="12" y2="12" />
+      </symbol>
+
+      <symbol id="icon-log-in" viewBox="0 0 24 24">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+        <polyline points="10 17 15 12 10 7" />
+        <line x1="15" x2="3" y1="12" y2="12" />
+      </symbol>
+
       <symbol id="icon-circle-check" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10" />
         <path d="m9 12 2 2 4-4" />
