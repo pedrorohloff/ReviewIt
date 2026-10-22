@@ -45,6 +45,11 @@
   color: var(--color-surface);
 }
 
+.cover[data-type='Series'] {
+  background: linear-gradient(150deg, var(--color-clay) 0%, var(--color-olive) 100%);
+  color: var(--color-surface);
+}
+
 .cover__icon {
   position: absolute;
   top: 0.75rem;

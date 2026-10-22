@@ -204,10 +204,10 @@ export const DEMO_POSTS: readonly Post[] = [
     id: '20000000-0000-4000-8000-000000000012',
     author: maria,
     title: 'A cidade que só abre à noite',
-    contentType: 'Game',
+    contentType: 'Series',
     genre: 'Horror',
     content:
-      'O jogo propõe uma cidade que muda de regras depois que o sol se põe. Durante o dia você conversa; à noite, precisa atravessar os mesmos lugares sem ser visto. A repetição do cenário poderia cansar, mas cada volta acrescenta uma informação nova sobre o que aconteceu ali.\n\nNão é um jogo difícil, é um jogo atento. Errei por pressa mais de uma vez. Vale jogar com fone e com tempo.',
+      'A série propõe uma cidade que muda de regras depois que o sol se põe. Durante o dia os personagens conversam; à noite, precisam atravessar os mesmos lugares sem serem vistos. A repetição do cenário poderia cansar, mas cada episódio acrescenta uma informação nova sobre o que aconteceu ali.\n\nNão é uma série difícil, é uma série atenta. Errei por pressa mais de uma vez. Vale maratonar com fone e com tempo.',
     notifyEnabled: true,
     notifyChannel: 'Email',
     likeCount: 27,

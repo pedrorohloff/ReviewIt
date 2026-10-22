@@ -1,7 +1,13 @@
 import { ParamMap, Params } from '@angular/router';
 import { ContentType, FeedFilters, Genre, SortOption } from '@app/core/models/post';
 
-export const CONTENT_TYPES: readonly ContentType[] = ['Book', 'Movie', 'Album', 'Game'];
+export const CONTENT_TYPES: readonly ContentType[] = [
+  'Book',
+  'Movie',
+  'Album',
+  'Game',
+  'Series',
+];
 export const GENRES: readonly Genre[] = ['Action', 'Romance', 'Horror', 'Comedy', 'Drama'];
 export const SORT_OPTIONS: readonly SortOption[] = ['recent', 'popular'];
 

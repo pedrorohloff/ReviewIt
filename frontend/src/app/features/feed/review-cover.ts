@@ -8,6 +8,7 @@ const COVER_ICONS: Record<ContentType, IconName> = {
   Movie: 'movie',
   Album: 'album',
   Game: 'game',
+  Series: 'series',
 };
 
 @Component({

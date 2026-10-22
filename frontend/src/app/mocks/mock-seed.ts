@@ -246,6 +246,8 @@ function formatLabel(contentType: ContentType): string {
       return 'filme';
     case 'Album':
       return 'álbum';
+    case 'Series':
+      return 'série';
     default:
       return 'jogo';
   }

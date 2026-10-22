@@ -17,6 +17,7 @@ export type IconName =
   | 'movie'
   | 'album'
   | 'game'
+  | 'series'
   | 'chevron-down'
   | 'check'
   | 'user'

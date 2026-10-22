@@ -30,6 +30,7 @@ describe('format utilities', () => {
 
   it('translates API enum values', () => {
     expect(contentTypeLabel('Album')).toBe('Álbum');
+    expect(contentTypeLabel('Series')).toBe('Série');
     expect(genreLabel('Horror')).toBe('Terror');
   });
 

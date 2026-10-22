@@ -99,6 +99,18 @@ class PostServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void shouldCreateSeriesPost() {
+        Profile author = profileRepository.save(TestDataFactory.createProfile("author-series"));
+        PostRequestDTO dto = new PostRequestDTO(
+                "A série que mudou o ritmo", "Series", "Drama", "Uma review sobre uma série de televisão.");
+
+        PostDTO result = postService.create(author.getId(), dto);
+
+        assertNotNull(result.id());
+        assertEquals("Series", result.contentType());
+    }
+
+    @Test
     void shouldUpdateOwnPost() {
         Profile author = profileRepository.save(TestDataFactory.createProfile("author4"));
         var saved = postRepository.save(TestDataFactory.createPost(author.getId()));

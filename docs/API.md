@@ -70,7 +70,7 @@ profile already exists. `ProfileDTO` includes `onboarded`.
 | Param | Values | Default | Notes |
 |---|---|---|---|
 | `q` | free text | – | Case-insensitive search over `title` OR `content`; `%`/`_` are escaped |
-| `contentType` | `Book` \| `Movie` \| `Album` \| `Game` | – | Invalid value → `400` |
+| `contentType` | `Book` \| `Movie` \| `Album` \| `Game` \| `Series` | – | Invalid value → `400` |
 | `genre` | `Action` \| `Romance` \| `Horror` \| `Comedy` \| `Drama` | – | Invalid value → `400` |
 | `sort` | `recent` \| `popular` | `recent` | `recent` = `createdAt DESC`; `popular` = `likeCount DESC`, invalid value → `400` |
 | `authorId` | UUID | – | Filter posts by author |

@@ -4,7 +4,8 @@ public enum ContentType {
     BOOK("Book"),
     MOVIE("Movie"),
     ALBUM("Album"),
-    GAME("Game");
+    GAME("Game"),
+    SERIES("Series");
 
     private final String value;
 

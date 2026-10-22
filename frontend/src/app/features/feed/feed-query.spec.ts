@@ -38,6 +38,7 @@ describe('parseFeedQuery', () => {
 
   it('validates each enum independently', () => {
     expect(isContentType('Game')).toBe(true);
+    expect(isContentType('Series')).toBe(true);
     expect(isContentType('game')).toBe(false);
     expect(isGenre('Horror')).toBe(true);
     expect(isGenre(null)).toBe(false);

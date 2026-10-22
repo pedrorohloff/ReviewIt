@@ -1,6 +1,6 @@
 import { ProfileSummary } from './profile';
 
-export type ContentType = 'Book' | 'Movie' | 'Album' | 'Game';
+export type ContentType = 'Book' | 'Movie' | 'Album' | 'Game' | 'Series';
 export type Genre = 'Action' | 'Romance' | 'Horror' | 'Comedy' | 'Drama';
 export const NOTIFY_CHANNELS = ['None', 'In-App', 'Email', 'Both'] as const;
 export type NotifyChannel = (typeof NOTIFY_CHANNELS)[number];

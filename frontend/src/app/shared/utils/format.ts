@@ -12,6 +12,7 @@ export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   Movie: 'Filme',
   Album: 'Álbum',
   Game: 'Jogo',
+  Series: 'Série',
 };
 
 export const GENRE_LABELS: Record<Genre, string> = {

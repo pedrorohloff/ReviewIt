@@ -113,6 +113,7 @@ class PostControllerTest extends AbstractIntegrationTest {
         Profile author = profileRepository.save(TestDataFactory.createProfile("ctrl_filter_author"));
         postRepository.save(TestDataFactory.createPost(author.getId(), "Book Review", ContentType.BOOK, Genre.ACTION));
         postRepository.save(TestDataFactory.createPost(author.getId(), "Movie Review", ContentType.MOVIE, Genre.ROMANCE));
+        postRepository.save(TestDataFactory.createPost(author.getId(), "Series Review", ContentType.SERIES, Genre.DRAMA));
 
         mockMvc.perform(get("/api/v1/posts")
                         .param("contentType", "Movie")
@@ -121,6 +122,14 @@ class PostControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].contentType").value("Movie"))
                 .andExpect(jsonPath("$.content[0].genre").value("Romance"));
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .param("contentType", "Series")
+                        .param("genre", "Drama"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].contentType").value("Series"))
+                .andExpect(jsonPath("$.content[0].genre").value("Drama"));
     }
 
     @Test
