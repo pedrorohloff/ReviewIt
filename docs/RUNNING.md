@@ -121,9 +121,11 @@ The repository ships Flyway-style migrations for only **part** of the schema, an
 - `V1__create_like_tables.sql` → `post_likes`, `comment_likes`
 - `V2__create_moderation_tables.sql` → `reports`, `moderation_actions`
 - `V3__create_notification_tables.sql` → `notifications`
+- `V4__provision_profiles_on_signup.sql` → `profiles.onboarded`, the `auth.users` trigger and
+  a backfill for existing users
 
-There is **no migration for `profiles`, `posts`, or `comments`** — that is why the Supabase
-project is empty.
+There is **no migration that creates `profiles`, `posts`, or `comments`** — run the schema
+block below first. `V4` then adds automatic profile provisioning on top of it.
 
 ### Option A — SQL Editor (recommended, no code change)
 
@@ -143,7 +145,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     role            VARCHAR(20)  NOT NULL DEFAULT 'Regular',
     account_status  VARCHAR(20)  NOT NULL DEFAULT 'Active',
     suspended_until TIMESTAMP,
-    created_at      TIMESTAMP    NOT NULL DEFAULT now()
+    created_at      TIMESTAMP    NOT NULL DEFAULT now(),
+    onboarded       BOOLEAN      NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -224,6 +227,23 @@ The `VARCHAR` default/expected values (`'Regular'`, `'Active'`, `'Pending'`, `'N
 `'In-App'`, etc.) match the enum converters in the code, so the application can read rows
 back correctly.
 
+### Profile auto-provisioning (required)
+
+After the core tables exist, run
+[`V4__provision_profiles_on_signup.sql`](../src/main/resources/db/migration/V4__provision_profiles_on_signup.sql)
+in the same SQL Editor. It:
+
+1. adds `profiles.onboarded` (existing projects only; included in the schema above for new ones);
+2. creates `public.generate_unique_username(text)`, which normalizes accents and appends
+   `-1`, `-2`, … when the generated username already exists;
+3. creates an `AFTER INSERT` trigger on `auth.users` that inserts a `profiles` row with the
+   same UUID and `onboarded = false`;
+4. backfills every existing `auth.users` row that has no profile.
+
+The frontend sends first-time users to `/onboarding` when `onboarded` is false. Saving the
+form calls `PUT /profiles/{id}` and marks the profile complete. The trigger is the normal
+path; `POST /profiles` remains as a fallback for projects where the trigger was not installed.
+
 ### Option B — `psql` from the terminal
 
 Save the SQL as `schema.sql`, then run:
@@ -298,10 +318,11 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/posts
    `spring.jpa.hibernate.ddl-auto=create-drop` and stubs the `supabase.jwt.*` properties, so
    the suite only needs a running Docker daemon (no `.env.properties`, no Supabase).
 
-2. **`POST /api/v1/profiles` likely fails.** `Profile.id` is `@NotNull` with no
-   `@GeneratedValue`, and `ProfileMapper.toModel()` never sets an id, so the insert persists
-   a null id. Profiles are meant to mirror Supabase Auth users (id = `auth.users.id`), so this
-   should be assigned from the JWT `sub` or a database default/trigger.
+2. **Profiles are provisioned by the database.** `V4__provision_profiles_on_signup.sql`
+   installs the `auth.users` trigger and backfills existing accounts. The backend still
+   exposes `POST /api/v1/profiles` as a fallback: it takes the id from the JWT `sub`, ignores
+   any client-supplied id, marks the profile onboarded, and returns `409` if the caller
+   already has one. The frontend's `/onboarding` route covers projects without the trigger.
 
 3. **`reports` uniqueness and NULLs.** The unique constraint
    `(reporter_id, post_id, comment_id)` does not prevent duplicate reports when one of

@@ -45,9 +45,15 @@ Errors follow RFC 7807 (`ProblemDetail`):
 |---|---|---|
 | GET | `/profiles?page={page}&pageSize={pageSize}` | List profiles (paginated) |
 | GET | `/profiles/{id}` | Get profile by id |
-| POST | `/profiles` | Create profile |
-| PUT | `/profiles/{id}` | Update profile |
-| DELETE | `/profiles/{id}` | Delete profile |
+| POST | `/profiles` | Create the caller's profile; id comes from the JWT `sub` |
+| PUT | `/profiles/{id}` | Update own profile and mark it onboarded |
+| DELETE | `/profiles/{id}` | Delete own profile |
+
+A Supabase trigger normally creates the profile row on signup, with
+`onboarded = false`. The frontend then shows `/onboarding`; saving the form calls
+`PUT /profiles/{id}`. `POST /profiles` is the fallback for projects without the
+trigger: it uses the authenticated `sub` as the id and returns `409` if that
+profile already exists. `ProfileDTO` includes `onboarded`.
 
 ### Posts
 | Method | Path | Description |

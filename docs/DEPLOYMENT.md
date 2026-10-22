@@ -71,23 +71,26 @@ to the login page and `AuthService` restores the session. The default Supabase
 email service is rate-limited and intended for development; configure custom
 SMTP before sharing the app widely.
 
-### 1.4 Create your first profile
+### 1.4 Automatic profile provisioning
 
-Sign-in creates a Supabase `auth.users` row, but **the app does not have a
-self-service onboarding screen yet**. Sign in once with the magic link, then
-create the matching `profiles` row using the user's UUID and a unique username:
+Sign-in creates a Supabase `auth.users` row. The `profiles` row is created
+automatically by the database trigger installed with
+[`V4__provision_profiles_on_signup.sql`](../src/main/resources/db/migration/V4__provision_profiles_on_signup.sql):
 
-```sql
-insert into public.profiles (id, username, role, account_status)
-select id, 'your-username', 'Admin', 'Active'
-from auth.users
-where email = 'you@example.com'
-on conflict (id) do nothing;
-```
+- the trigger runs after every insert into `auth.users`;
+- the new `profiles` row uses the **same UUID** as the auth user;
+- the username is derived from `user_metadata.username`, `full_name`, or the email local
+  part, with a numeric suffix if it collides;
+- `profiles.onboarded` starts as `false`, so the frontend shows `/onboarding` once;
+- existing auth users are backfilled by the same migration.
 
-`role` is `Regular`, `Moderator` or `Admin`; `account_status` is `Active`,
-`Suspended` or `Banned`. Without this row, the feed can load, but creating
-posts/comments and the profile page will fail because of the foreign keys.
+There is no manual SQL step. If a project was created before this migration, run the V4
+file once in **SQL Editor → New query**. `role` is `Regular`, `Moderator` or `Admin`;
+`account_status` is `Active`, `Suspended` or `Banned`.
+
+If the trigger is missing, the frontend still offers onboarding and
+`POST /api/v1/profiles` creates the row with the authenticated `sub`. Without a profile,
+creating posts/comments and opening the profile page fail because of the foreign keys.
 
 ---
 
@@ -241,7 +244,8 @@ in `src/environments/environment.development.ts` (gitignored) or in
 ## 5. Deployment checklist
 
 - [ ] Supabase schema executed; tables present in Table Editor.
-- [ ] `profiles` row created for the first auth user.
+- [ ] `V4__provision_profiles_on_signup.sql` executed; the `on_auth_user_created` trigger exists.
+- [ ] New user receives a `profiles` row automatically (no manual insert).
 - [ ] Backend health check returns 200.
 - [ ] CORS preflight returns the frontend origin.
 - [ ] Vercel build succeeds and `config.json` contains the production values.
@@ -266,14 +270,13 @@ in `src/environments/environment.development.ts` (gitignored) or in
 | `password authentication failed` | Wrong pooler username (must include project ref) or password | Copy the URI exactly; set `SUPABASE_DB_USERNAME` |
 | `prepared statement ... already exists` | Transaction pooler (port 6543) | Use the session pooler on port 5432 |
 | App silently uses demo data | `config.json` missing/blank, or Supabase env vars absent | Re-run `npm run build:deploy`; check the deployed `/config.json` |
+| `Profile not found with id: …` when publishing | `profiles` row missing (trigger not installed or backfill skipped) | Run `V4__provision_profiles_on_signup.sql`; the auth user keeps the same UUID |
 | Deep links 404 | SPA fallback not applied | Keep `frontend/vercel.json` or the Netlify `_redirects` rule |
 
 ---
 
 ## 7. Known limitations
 
-- **No self-service profile creation.** Create the profile row manually (1.4)
-  until an onboarding flow exists.
 - **Free hosting cold starts.** Render free instances sleep; the first request
   after idle is slow.
 - **Flyway is not executed.** The SQL migration files are reference DDL; the

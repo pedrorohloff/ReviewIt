@@ -164,8 +164,8 @@ as `@RequestAttribute("currentUserId")`.
 
 ## Known limitations
 
-- Self-service profile onboarding is not implemented; create the `profiles` row
-  for a new Supabase user manually (see `docs/DEPLOYMENT.md`).
+- Profiles are provisioned automatically by the `auth.users` trigger in
+  `V4__provision_profiles_on_signup.sql`; first-time users complete `/onboarding`.
 - Flyway migrations are reference DDL only; the schema is applied via SQL.
 - The single-jar deployment is not implemented; the frontend is served
   statically and the backend runs separately.
