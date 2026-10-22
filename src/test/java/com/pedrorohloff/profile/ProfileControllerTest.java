@@ -55,13 +55,33 @@ class ProfileControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldCreateProfile() throws Exception {
+        UUID requesterId = UUID.randomUUID();
         ProfileRequestDTO dto = new ProfileRequestDTO("newuser", "https://example.com/avatar.png");
 
         mockMvc.perform(post("/api/v1/profiles")
+                        .requestAttr("currentUserId", requesterId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username").value("newuser"));
+                .andExpect(jsonPath("$.id").value(requesterId.toString()))
+                .andExpect(jsonPath("$.username").value("newuser"))
+                .andExpect(jsonPath("$.onboarded").value(true));
+    }
+
+    @Test
+    void shouldReturn409WhenCreatingASecondProfileForTheSameUser() throws Exception {
+        UUID requesterId = UUID.randomUUID();
+        ProfileRequestDTO dto = new ProfileRequestDTO("seconduser", null);
+        Profile existing = new Profile();
+        existing.setId(requesterId);
+        existing.setUsername("existing2");
+        profileRepository.save(existing);
+
+        mockMvc.perform(post("/api/v1/profiles")
+                        .requestAttr("currentUserId", requesterId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -120,6 +140,7 @@ class ProfileControllerTest extends AbstractIntegrationTest {
         ProfileRequestDTO dto = new ProfileRequestDTO("ab", null); // too short
 
         mockMvc.perform(post("/api/v1/profiles")
+                        .requestAttr("currentUserId", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());

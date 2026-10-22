@@ -39,11 +39,13 @@ public class TestDataFactory {
 
     public static Profile createProfile(String username, Role role, AccountStatus status, Instant suspendedUntil) {
         Profile profile = new Profile();
+        profile.setId(UUID.randomUUID());
         profile.setUsername(username);
         profile.setAvatarUrl("https://example.com/" + username + ".png");
         profile.setRole(role);
         profile.setAccountStatus(status);
         profile.setSuspendedUntil(suspendedUntil);
+        profile.setOnboarded(true);
         return profile;
     }
 

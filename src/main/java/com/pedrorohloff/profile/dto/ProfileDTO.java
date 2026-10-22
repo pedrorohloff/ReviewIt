@@ -10,6 +10,7 @@ public record ProfileDTO(
         String role,
         String status,
         Instant suspendedUntil,
-        Instant createdAt
+        Instant createdAt,
+        boolean onboarded
 ) {
 }

@@ -23,8 +23,8 @@ import java.util.UUID;
 public class Profile {
 
     @Id
-    @GeneratedValue
     @NotNull
+    @Column(nullable = false, updatable = false)
     private UUID id;
 
     @NotBlank
@@ -52,6 +52,9 @@ public class Profile {
 
     @Column(nullable = false, name = "created_at", updatable = false)
     private Instant createdAt = Instant.now();
+
+    @Column(nullable = false)
+    private boolean onboarded = false;
 
     public boolean isSuspended() {
         return accountStatus == AccountStatus.SUSPENDED

@@ -37,8 +37,9 @@ public class ProfileController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public ProfileDTO create(@RequestBody @Valid @NotNull ProfileRequestDTO profileRequestDTO) {
-        return profileService.create(profileRequestDTO);
+    public ProfileDTO create(@RequestAttribute("currentUserId") UUID requesterId,
+                             @RequestBody @Valid @NotNull ProfileRequestDTO profileRequestDTO) {
+        return profileService.create(requesterId, profileRequestDTO);
     }
 
     @PutMapping("/{id}")

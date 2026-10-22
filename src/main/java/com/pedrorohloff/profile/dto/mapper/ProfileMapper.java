@@ -22,7 +22,8 @@ public class ProfileMapper {
                 profile.getRole().getValue(),
                 profile.getAccountStatus().getValue(),
                 profile.getSuspendedUntil(),
-                profile.getCreatedAt()
+                profile.getCreatedAt(),
+                profile.isOnboarded()
         );
     }
 

@@ -66,16 +66,28 @@ class ProfileServiceTest extends AbstractIntegrationTest {
 
     @Test
     void shouldCreateProfile() {
+        UUID requesterId = UUID.randomUUID();
         ProfileRequestDTO dto = new ProfileRequestDTO("newuser", "https://example.com/avatar.png");
 
-        ProfileDTO result = profileService.create(dto);
+        ProfileDTO result = profileService.create(requesterId, dto);
 
         assertNotNull(result);
-        assertNotNull(result.id());
+        assertEquals(requesterId, result.id());
         assertEquals("newuser", result.username());
         assertEquals("https://example.com/avatar.png", result.avatarUrl());
         assertEquals("Regular", result.role());
         assertEquals("Active", result.status());
+        assertTrue(result.onboarded());
+    }
+
+    @Test
+    void shouldRejectCreatingASecondProfileForTheSameUser() {
+        UUID requesterId = UUID.randomUUID();
+        profileService.create(requesterId, new ProfileRequestDTO("firstuser", null));
+
+        assertThrows(
+                BusinessException.class,
+                () -> profileService.create(requesterId, new ProfileRequestDTO("seconduser", null)));
     }
 
     @Test

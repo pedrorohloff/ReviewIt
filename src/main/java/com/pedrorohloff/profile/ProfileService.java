@@ -53,8 +53,15 @@ public class ProfileService {
                 .orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    public ProfileDTO create(@Valid @NotNull ProfileRequestDTO profileRequestDTO) {
+    @Transactional
+    public ProfileDTO create(@NotNull UUID requesterId, @Valid @NotNull ProfileRequestDTO profileRequestDTO) {
+        if (profileRepository.existsById(requesterId)) {
+            throw new BusinessException("Profile already exists");
+        }
+
         Profile profile = profileMapper.toModel(profileRequestDTO);
+        profile.setId(requesterId);
+        profile.setOnboarded(true);
         return profileMapper.toDTO(profileRepository.save(profile));
     }
 
@@ -71,6 +78,7 @@ public class ProfileService {
 
         profile.setUsername(profileRequestDTO.username());
         profile.setAvatarUrl(profileRequestDTO.avatarUrl());
+        profile.setOnboarded(true);
 
         return profileMapper.toDTO(profileRepository.save(profile));
     }
