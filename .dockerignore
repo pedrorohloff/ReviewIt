@@ -1,0 +1,14 @@
+target
+.git
+.gitignore
+.env
+.env.*
+.idea
+.vscode
+*.iml
+frontend
+misc
+docs
+node_modules
+test-results
+playwright-report
