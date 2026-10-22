@@ -3,6 +3,9 @@
 A practical guide to getting the ReviewIt Spring Boot application running and tested
 on a fresh machine, including how to create the schema in Supabase.
 
+> Deploying to the cloud? See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for Supabase,
+> Render and Vercel instructions.
+
 ---
 
 ## 1. Prerequisites
@@ -27,12 +30,16 @@ create it on every new machine by copying `.env.example`:
 
 ```properties
 # Database
-SUPABASE_DB_URL=jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?user=postgres.<project-ref>
+SUPABASE_DB_URL=jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require&user=postgres.<project-ref>
+SUPABASE_DB_USERNAME=postgres.<project-ref>
 SUPABASE_DB_PASSWORD=<your-database-password>
 
 # JWT
 SUPABASE_JWT_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/keys
 SUPABASE_JWT_ISSUER=https://<project-ref>.supabase.co/auth/v1
+
+# CORS (frontend origin)
+APP_CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 > **Security:** the DB password lives in this file. Keep it out of git (it already is)
@@ -53,7 +60,8 @@ From the project root:
 java -jar target/ReviewIt-0.0.1-SNAPSHOT.jar
 ```
 
-- Runs on **http://localhost:8080** (no `server.port` is configured).
+- Runs on **http://localhost:8080**. The port comes from `server.port=${PORT:8080}`,
+  so PaaS platforms can inject `PORT` without code changes.
 - On success you will see `Started ReviewItApplication` in the log output.
 - If `spring-boot:run` cannot find Java, set `JAVA_HOME` to a JDK 25 install first, e.g.
   `export JAVA_HOME=/path/to/jdk-25`.
@@ -238,11 +246,14 @@ startup and in tests.
 
 ## 6. API endpoints
 
-All endpoints live under `/api/v1` and require `Authorization: Bearer <supabase-jwt>`
-(`anyRequest().authenticated()`). The JWT `sub` claim must be a **UUID** — it becomes the
-`currentUserId` request attribute.
+All endpoints live under `/api/v1`. `GET /api/v1/health`, Swagger UI and the
+OpenAPI document are public; everything else requires
+`Authorization: Bearer <supabase-jwt>` (`anyRequest().authenticated()`). The JWT
+`sub` claim must be a **UUID** — it becomes the `currentUserId` request attribute.
 
 ```
+GET    /api/v1/health
+
 GET    /api/v1/profiles?page=0&pageSize=10
 GET    /api/v1/profiles/{id}
 POST   /api/v1/profiles

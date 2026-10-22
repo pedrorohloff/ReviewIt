@@ -1,127 +1,148 @@
 # ReviewIt
 
-A Spring Boot 3/4 (Spring Boot 4.1.1) REST API for a review platform covering books, movies, albums, series and games.
+A review platform for books, movies, albums, series and games. The backend is a
+Spring Boot 4.1.1 REST API (Java 25) covering **Profile**, **Post**, **Comment**,
+**Like**, **Moderation** and **Notification**. The frontend is an Angular 22 +
+Tailwind CSS 4 app in `frontend/` that runs in demo mode without any backend or
+against Supabase Auth + the API.
 
-Built following the `crud-angular-spring` (Loiane Groner) architectural pattern. The implementation covers 6 core domains: **Profile**, **Post**, **Comment**, **Like**, **Moderation** and **Notification**.
+## Tech stack
 
-## Tech Stack
-
-- **Java 25**
-- **Spring Boot 4.1.1** (WebMVC, Validation, Security, Data JPA)
-- **PostgreSQL** (Supabase in production/development as configured)
-- **Flyway** migrations (for Like/Moderation/Notification tables; core tables documented for Supabase setup)
-- **Testcontainers** + PostgreSQL 16 for integration tests
-- **Lombok**, **springdoc-openapi** (Swagger UI), **Nimbus JOSE JWT** (Supabase JWKS validation)
-- **Maven** (with `mvnw` wrapper)
-- **Angular 22 + Tailwind CSS 4** frontend in `frontend/` (demo mode available)
+- **Backend:** Java 25, Spring Boot 4.1.1 (WebMVC, Validation, Security, Data
+  JPA), PostgreSQL (Supabase), Lombok, springdoc-openapi, Nimbus JOSE JWT
+- **Frontend:** Angular 22 (standalone, signals, zoneless), Tailwind CSS 4,
+  Vitest, Playwright, axe-core
+- **Tests:** Testcontainers + PostgreSQL 16 for backend integration tests
+- **Build:** Maven wrapper (`mvnw`), npm 10
 
 ## Project structure
 
-The code is organized by domain under `src/main/java/com/pedrorohloff`:
-- `profile/`, `post/`, `comment/`, `like/`, `moderation/`, `notification/` — domain packages (entity, repository, service, controller, dto, mapper, enums)
-- `security/` — JWT filter and security configuration
-- `shared/` — base entities, exceptions, advice, config (including OpenAPI)
-- `exception/` — domain exceptions (`BusinessException`, `RecordNotFoundException`, `ForbiddenException`)
+```text
+src/main/java/com/pedrorohloff/
+  profile/ post/ comment/ like/ moderation/ notification/   domain packages
+  security/        JWT filter, security config, CORS
+  shared/          base entities, exceptions, advice, config, health controller
+  exception/       domain exceptions
+frontend/          Angular app
+docs/              API, database/local setup, deployment, demo script
+```
 
 ## Prerequisites
 
 - JDK 25
-- Docker (required to run integration tests — Testcontainers uses it)
-- Supabase project (for running the application against a real PostgreSQL instance; tests don't require Supabase)
+- Docker (backend integration tests use Testcontainers)
+- A Supabase project for running against real PostgreSQL and Supabase Auth
+- Node.js 22+ and npm 10+ for the frontend
 
 > On Windows use `mvnw.cmd` instead of `./mvnw`.
 
-## Configuration
+## Backend configuration
 
-Spring Boot reads `.env.properties` from the project root (see `spring.config.import=optional:file:.env.properties`). Copy `.env.example` to `.env.properties` and fill in values:
+Spring Boot reads `.env.properties` from the project root
+(`spring.config.import=optional:file:.env.properties`). Copy `.env.example` to
+`.env.properties` and fill in the values:
 
-```properties
-SUPABASE_DB_URL=jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?user=postgres.<project-ref>
-SUPABASE_DB_PASSWORD=<your-database-password>
-SUPABASE_JWT_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/keys
-SUPABASE_JWT_ISSUER=https://<project-ref>.supabase.co/auth/v1
-```
+| Variable | Purpose |
+|---|---|
+| `SUPABASE_DB_URL` | JDBC URL, preferably the session pooler with `sslmode=require` |
+| `SUPABASE_DB_USERNAME` | Pooler user, e.g. `postgres.<project-ref>` |
+| `SUPABASE_DB_PASSWORD` | Database password |
+| `SUPABASE_JWT_JWKS_URL` | Supabase JWKS endpoint |
+| `SUPABASE_JWT_ISSUER` | Expected JWT `iss` claim |
+| `APP_CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins (default `http://localhost:5173`) |
+| `SPRING_JPA_SHOW_SQL` | `false` by default; set `true` only when debugging SQL |
 
-## Running the application
+Hosting platforms inject `PORT`; the app maps it with `server.port=${PORT:8080}`.
+The backend accepts both RSA and ECDSA Supabase signing keys and caches the JWKS
+for five minutes, refreshing it when an unknown `kid` arrives.
+
+## Running the backend
 
 ```bash
-# Run in development mode
 ./mvnw spring-boot:run
 
-# Build and run
+# or package and run
 ./mvnw clean package -DskipTests
 java -jar target/ReviewIt-0.0.1-SNAPSHOT.jar
 ```
 
-App runs at `http://localhost:8080`.
-
-## Running tests
-
-Integration tests use Testcontainers and create/drop schema in an ephemeral PostgreSQL container. **Docker must be running**.
-
-```bash
-# Run all tests (needs docker group access on some setups)
-sg docker -c './mvnw test'
-
-# Or if already in docker group
-./mvnw test
-
-# Run specific test class/method
-./mvnw test -Dtest=PostControllerTest#shouldCreatePost
-
-# Compile only
-./mvnw test-compile
-```
-
-Current test suite: **133 tests**, all passing.
+The API starts at `http://localhost:8080`. The database schema must exist in
+Supabase first; see [`docs/RUNNING.md`](docs/RUNNING.md#5-create-the-tables-in-supabase).
 
 ## Running the frontend
-
-The Angular app lives in `frontend/`. Node.js 22+ and npm 10+ are required.
 
 ```bash
 cd frontend
 npm install
 
-# Local development file (gitignored). Blank Supabase values keep demo mode on.
+# Local development file (gitignored). Blank Supabase values = demo mode.
 cp src/environments/environment.development.example.ts \
    src/environments/environment.development.ts
 
 npm start
 ```
 
-The dev server runs at `http://localhost:5173` and proxies `/api` to the backend at
-`http://localhost:8080`. The current feed uses local fixtures and does not require
-the backend to be running.
+Open `http://localhost:5173`. In demo mode the feed, profiles, likes, comments,
+notifications and moderation console use a deterministic local mock; no backend
+is required. With Supabase values configured, the app uses Supabase Auth and the
+API (the dev server proxies `/api` to `localhost:8080`).
 
 ```bash
-npm test          # Vitest unit tests
-npm run lint      # Angular ESLint
-npm run build     # production build in dist/frontend/browser
-npm run e2e       # Playwright desktop + mobile (install Chromium once)
+npm test              # Vitest unit tests
+npm run lint          # Angular ESLint
+npm run build         # production build in dist/frontend/browser
+npm run build:deploy  # build + runtime config from REVIEWIT_* env vars
+npm run e2e           # Playwright desktop + mobile (install Chromium once)
 ```
 
-See `frontend/README.md` and `docs/API.md` for details.
+See [`frontend/README.md`](frontend/README.md) for architecture and runtime
+configuration.
 
-## Database schema (Supabase setup)
+## Deployment
 
-The app uses Flyway migrations for parts of the schema:
-- `V1__create_like_tables.sql` — `post_likes`, `comment_likes`
-- `V2__create_moderation_tables.sql` — `reports`, `moderation_actions`
-- `V3__create_notification_tables.sql` — `notifications`
+The recommended split is:
 
-Core tables (`profiles`, `posts`, `comments`) need to exist in Supabase for the app to run. The full schema is documented in `misc/RUNNING.md` (historical) and can be recreated from the SQL block there. Alternatively create via Supabase SQL Editor using the schema from commit history.
+- **Supabase** — PostgreSQL + Auth
+- **Render** — Spring Boot API using the included `Dockerfile` / `render.yaml`
+- **Vercel** — Angular static build with SPA fallback (`frontend/vercel.json`)
 
-For full setup details see the original `RUNNING.md` content captured in git history (`git show 56b37f7:RUNNING.md`).
+Step-by-step instructions, environment variables, CORS, Supabase redirect URLs
+and troubleshooting are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). A short
+walkthrough for demos is in [`docs/DEMO.md`](docs/DEMO.md).
 
-## API Documentation (Swagger)
+## Database schema (Supabase)
 
-With the app running, access the OpenAPI UI at:
+The repository contains reference SQL files for the like, moderation and
+notification tables, but **Flyway is not wired into the application**. The
+complete schema, including `profiles`, `posts` and `comments`, is in
+[`docs/RUNNING.md` §5](docs/RUNNING.md#5-create-the-tables-in-supabase) and is
+applied once through the Supabase SQL Editor.
 
-- Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- OpenAPI JSON: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+## API documentation
 
-All endpoints (except those excluded by security config in test profile) require `Authorization: Bearer <Supabase JWT>`. Error responses follow RFC 7807 (`ProblemDetail`).
+With the app running:
+
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+- OpenAPI JSON: <http://localhost:8080/v3/api-docs>
+- Health probe: <http://localhost:8080/api/v1/health>
+
+`/api/v1/health`, Swagger UI and the OpenAPI document are public. Every other
+endpoint requires `Authorization: Bearer <Supabase JWT>`. Errors follow RFC 7807
+(`ProblemDetail`). See [`docs/API.md`](docs/API.md) for the full endpoint list.
+
+## Running tests
+
+Backend tests use Testcontainers; Docker must be running.
+
+```bash
+./mvnw test
+./mvnw test -Dtest=PostControllerTest#shouldCreatePost
+./mvnw test-compile
+```
+
+The suite includes service and controller integration tests plus unit tests for
+CORS, the health endpoint and JWT verifier selection. Frontend unit tests and the
+Playwright suite are documented in `frontend/README.md`.
 
 ## Key endpoints
 
@@ -129,20 +150,24 @@ Base path: `/api/v1`
 
 | Domain | Endpoints |
 |---|---|
+| Health | `GET /health` (public) |
 | Profile | `GET/POST/PUT/DELETE /profiles`, pagination with `page`, `pageSize` |
 | Post | `GET/POST/PUT/DELETE /posts`, `PATCH /posts/{id}/notification-settings`, pagination |
-| Comment | `GET /posts/{postId}/comments`, `GET/POST/PUT/DELETE /comments` (nested under posts where appropriate) |
+| Comment | `GET /posts/{postId}/comments`, `GET/POST/PUT/DELETE /comments` |
 | Like | `POST /posts/{postId}/like`, `POST /comments/{commentId}/like` (toggle) |
 | Moderation/Reports | `POST /reports`, `GET /reports?page=0&pageSize=10`, `POST /reports/{reportId}/action` |
 | Notification | `GET /notifications?page=0&pageSize=10`, `PATCH /notifications/{id}/read` |
 
-All authenticated endpoints expect `currentUserId` from the JWT `sub` claim (exposed as `@RequestAttribute`).
+Authenticated endpoints expect the current user in the JWT `sub` claim, exposed
+as `@RequestAttribute("currentUserId")`.
 
-## Testing notes
+## Known limitations
 
-- `AbstractIntegrationTest` (`@ActiveProfiles("test")`) uses Testcontainers, sets `ddl-auto=create-drop`, and provides JWT/security stubs.
-- Security is profile-gated: production (`!test`) enables JWT security; test profile uses `TestSecurityConfig` for easier controller testing.
-- `@Transactional` + `@DirtiesContext(classMode = AFTER_CLASS)` ensure proper test isolation.
+- Self-service profile onboarding is not implemented; create the `profiles` row
+  for a new Supabase user manually (see `docs/DEPLOYMENT.md`).
+- Flyway migrations are reference DDL only; the schema is applied via SQL.
+- The single-jar deployment is not implemented; the frontend is served
+  statically and the backend runs separately.
 
 ## License
 

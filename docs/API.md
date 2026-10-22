@@ -6,7 +6,18 @@ This document summarizes the REST API surface. For the interactive UI, run the a
 
 ## Authentication
 
-All endpoints require a valid Supabase JWT. Send `Authorization: Bearer <token>`. The JWT `sub` (user ID) is extracted by `JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
+All endpoints require a valid Supabase JWT, except `GET /api/v1/health`, Swagger UI and the OpenAPI JSON. Send `Authorization: Bearer <token>`. The JWT `sub` (user ID) is extracted by `JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
+
+The backend accepts RSA and ECDSA Supabase signing keys, caches the JWKS for five
+minutes and refreshes it when an unknown `kid` is presented.
+
+## CORS
+
+The frontend is deployed separately from the API. Browser origins must be listed
+in `APP_CORS_ALLOWED_ORIGINS` (comma-separated; wildcards such as
+`https://*.vercel.app` are supported). Authentication uses a bearer token, so
+credentialed CORS is disabled. Preflight `OPTIONS` requests are allowed without a
+token.
 
 ## Base Path
 
@@ -21,6 +32,11 @@ Errors follow RFC 7807 (`ProblemDetail`):
 - `400 Bad Request` — Validation errors (`MethodArgumentNotValidException`) with `FieldValidationError` list
 
 ## Endpoints
+
+### Health
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Public liveness probe; returns `{"status":"ok"}` |
 
 ### Profiles
 | Method | Path | Description |
