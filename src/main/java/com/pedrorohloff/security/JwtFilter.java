@@ -1,7 +1,11 @@
 package com.pedrorohloff.security;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -32,6 +36,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Value("${supabase.jwt.issuer}")
     private String issuer;
+
+    private static final long JWKS_TTL_MS = 5 * 60 * 1000L;
+
+    private volatile JWKSet cachedJwks;
+    private volatile long cachedAt;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -66,17 +75,18 @@ public class JwtFilter extends OncePerRequestFilter {
     private UUID validateToken(String token) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        JWKSet jwkSet = JWKSet.load(new URL(jwksUrl));
-        var jwk = jwkSet.getKeyByKeyId(signedJWT.getHeader().getKeyID());
-
+        String keyId = signedJWT.getHeader().getKeyID();
+        JWK jwk = jwks().getKeyByKeyId(keyId);
         if (jwk == null) {
-            throw new IllegalArgumentException("No matching key found for kid: " + signedJWT.getHeader().getKeyID());
+            // Supabase may rotate signing keys; force one refresh before giving up.
+            jwk = refreshJwks().getKeyByKeyId(keyId);
         }
 
-        RSAKey rsaKey = (RSAKey) jwk;
-        RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
+        if (jwk == null) {
+            throw new IllegalArgumentException("No matching key found for kid: " + keyId);
+        }
 
-        JWSVerifier verifier = new RSASSAVerifier(publicKey);
+        JWSVerifier verifier = verifierFor(jwk);
 
         if (!signedJWT.verify(verifier)) {
             throw new IllegalArgumentException("Invalid JWT signature");
@@ -93,5 +103,35 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         return UUID.fromString(claims.getSubject());
+    }
+
+    private JWKSet jwks() throws Exception {
+        JWKSet current = cachedJwks;
+        if (current != null && System.currentTimeMillis() - cachedAt < JWKS_TTL_MS) {
+            return current;
+        }
+        return refreshJwks();
+    }
+
+    private synchronized JWKSet refreshJwks() throws Exception {
+        cachedJwks = JWKSet.load(new URL(jwksUrl));
+        cachedAt = System.currentTimeMillis();
+        return cachedJwks;
+    }
+
+    /**
+     * Supabase projects can sign access tokens with RSA (legacy/default in some
+     * projects) or ECDSA keys. Supporting both avoids a ClassCastException when
+     * the project uses the newer asymmetric signing keys.
+     */
+    static JWSVerifier verifierFor(JWK jwk) throws JOSEException {
+        if (jwk instanceof RSAKey rsaKey) {
+            RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
+            return new RSASSAVerifier(publicKey);
+        }
+        if (jwk instanceof ECKey ecKey) {
+            return new ECDSAVerifier(ecKey);
+        }
+        throw new JOSEException("Unsupported JWK key type: " + jwk.getKeyType());
     }
 }
