@@ -172,11 +172,11 @@ The Angular build is fully static. Runtime settings live in
 |---|---|
 | `REVIEWIT_API_URL` | `https://<backend>.onrender.com/api/v1` |
 | `REVIEWIT_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
-| `REVIEWIT_SUPABASE_ANON_KEY` | Supabase **anon** public key |
+| `REVIEWIT_SUPABASE_ANON_KEY` | Supabase **anon** public key (new projects may show a `sb_publishable_...` key) |
 
 5. Deploy.
 
-The anon key is public by design and is shipped to the browser. **Never** put the
+The anon/publishable key is public by design and is shipped to the browser. **Never** put the
 Supabase `service_role` key or the database password in the frontend.
 
 `build:deploy` runs `ng build` first and only then writes `config.json`, so the

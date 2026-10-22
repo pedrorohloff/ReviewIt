@@ -49,7 +49,7 @@ The app resolves configuration in two layers:
 {
   "apiBaseUrl": "https://api.example.com/api/v1",
   "supabaseUrl": "https://project-ref.supabase.co",
-  "supabaseAnonKey": "public-anon-key"
+  "supabaseAnonKey": "public-anon-or-publishable-key"
 }
 ```
 
@@ -57,14 +57,14 @@ The app resolves configuration in two layers:
 - Non-blank Supabase values → real mode; `apiBaseUrl` must point to the API.
 - `apiBaseUrl` defaults to `/api/v1` (the dev proxy path).
 - Never put a Supabase `service_role` key or a database password in the
-  frontend. The anon key is public by design.
+  frontend. The anon/publishable key is public by design.
 
 ### Production build with runtime config
 
 ```bash
 REVIEWIT_API_URL=https://api.example.com/api/v1 \
 REVIEWIT_SUPABASE_URL=https://project-ref.supabase.co \
-REVIEWIT_SUPABASE_ANON_KEY=public-anon-key \
+REVIEWIT_SUPABASE_ANON_KEY=public-anon-or-publishable-key \
 npm run build:deploy
 ```
 
