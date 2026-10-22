@@ -1,0 +1,103 @@
+<section class="notifications-layout" aria-labelledby="notifications-title">
+  <div
+    #notificationsPanel
+    class="notifications-panel"
+    role="region"
+    aria-label="Notificações"
+    tabindex="0"
+  >
+    <div class="notifications-column">
+      <header class="notifications-head">
+        <p class="notifications-head__eyebrow">Sua conta</p>
+        <h1 id="notifications-title">Notificações</h1>
+        @if (countLabel()) {
+          <p class="notifications-head__count">{{ countLabel() }}</p>
+        }
+      </header>
+
+      @if (status() === 'idle' || status() === 'loading') {
+        <div class="notif-skeleton" role="status">
+          <span class="notif-sr">Carregando notificações…</span>
+          @for (row of skeletonRows; track row) {
+            <div class="notif-skeleton__row" aria-hidden="true">
+              <span class="notif-skeleton__icon"></span>
+              <span class="notif-skeleton__lines">
+                <span class="notif-skeleton__line notif-skeleton__line--title"></span>
+                <span class="notif-skeleton__line"></span>
+              </span>
+            </div>
+          }
+        </div>
+      } @else if (status() === 'error') {
+        <div class="notif-status" role="alert">
+          <p class="notif-status__title">Não foi possível carregar as notificações</p>
+          <p class="notif-status__copy">{{ errorMessage() }}</p>
+          <button type="button" class="notif-action" (click)="retry()">Tentar novamente</button>
+        </div>
+      } @else if (status() === 'empty') {
+        <div class="notif-empty">
+          <span class="notif-empty__icon" aria-hidden="true">
+            <app-icon name="bell" [size]="22" />
+          </span>
+          <p class="notif-empty__title">Tudo em dia por aqui</p>
+          <p class="notif-empty__copy">
+            Quando alguém comentar ou curtir suas reviews, o aviso aparece nesta página.
+          </p>
+          <a class="notif-empty__action" routerLink="/">Voltar para o feed</a>
+        </div>
+      } @else {
+        <ul class="notif-list" [attr.aria-busy]="status() === 'loadingMore'">
+          @for (notification of items(); track notification.id) {
+            <li class="notif" [class.notif--unread]="!notification.readAt">
+              <span class="notif__icon" aria-hidden="true">
+                <app-icon [name]="iconFor(notification)" [size]="18" />
+              </span>
+
+              <div class="notif__body">
+                <p class="notif__message">{{ typeLabel(notification) }}</p>
+                <a class="notif__post" [routerLink]="['/posts', notification.postId]">
+                  {{ postTitle(notification) }}
+                </a>
+              </div>
+
+              <div class="notif__side">
+                @if (notification.readAt) {
+                  <span class="notif__read-state" aria-hidden="true">
+                    <app-icon name="check" [size]="14" />
+                  </span>
+                } @else {
+                  <span class="notif__dot"><span class="notif-sr">Não lida</span></span>
+                  <button
+                    type="button"
+                    class="notif__read"
+                    [attr.aria-label]="'Marcar como lida: ' + typeLabel(notification)"
+                    (click)="markRead(notification)"
+                  >
+                    Marcar como lida
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        @if (status() === 'loadingMore') {
+          <p class="notif-loading" role="status">Carregando mais notificações…</p>
+        } @else if (status() === 'errorMore') {
+          <div class="notif-status notif-status--inline" role="alert">
+            <p class="notif-status__copy">{{ errorMessage() }}</p>
+            <button type="button" class="notif-action" (click)="retry()">Tentar novamente</button>
+          </div>
+        } @else if (status() === 'end') {
+          <p class="notif-end">Você chegou ao fim das notificações.</p>
+        } @else if (hasNext()) {
+          <button type="button" class="notif-more" (click)="loadMore()">
+            Carregar mais notificações
+          </button>
+        }
+      }
+    </div>
+  </div>
+
+  <app-scroll-rail [target]="panel()?.nativeElement ?? null" />
+</section>

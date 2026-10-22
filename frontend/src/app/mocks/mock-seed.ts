@@ -285,20 +285,25 @@ function buildComments(posts: Post[]): Comment[] {
 
 function buildNotifications(posts: Post[]): Notification[] {
   const notifications: Notification[] = [];
+  const total = 14;
 
-  for (let index = 0; index < 3; index += 1) {
-    const post = posts[index];
+  for (let index = 0; index < total && posts.length > 0; index += 1) {
+    const post = posts[index % posts.length];
+
     if (!post) {
       continue;
     }
 
     notifications.push({
-      id: `40000000-0000-4000-8000-00000000000${index + 1}`,
+      id: `40000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
       userId: MOCK_PROFILES[0]?.id ?? '',
       postId: post.id,
-      type: index === 0 ? 'New Comment' : 'Like Milestone',
+      type: index % 2 === 0 ? 'New Comment' : 'Like Milestone',
       channel: 'In-App',
-      readAt: index === 2 ? new Date(BASE_DATE - 3_600_000).toISOString() : null,
+      // Every fourth notification is already read, so the unread dot and the
+      // "Marcar como lida" action both have something to show.
+      readAt:
+        index % 4 === 3 ? new Date(BASE_DATE - (index + 1) * 3_600_000).toISOString() : null,
     });
   }
 

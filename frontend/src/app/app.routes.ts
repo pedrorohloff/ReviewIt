@@ -47,6 +47,13 @@ export const routes: Routes = [
           import('./features/profile/profile-page').then((m) => m.ProfilePage),
       },
       {
+        path: 'notifications',
+        title: 'Notificações · ReviewIt',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/notifications/notifications-page').then((m) => m.NotificationsPage),
+      },
+      {
         path: '403',
         title: 'Acesso negado · ReviewIt',
         loadComponent: () => import('./pages/forbidden-page').then((m) => m.ForbiddenPage),
