@@ -60,7 +60,9 @@ In **Authentication → URL Configuration**:
   `http://localhost:5173/login` for local development.
 
 The frontend sends `emailRedirectTo: <origin>/login`, so the magic link returns
-to the login page and `AuthService` restores the session.
+to the login page and `AuthService` restores the session. The default Supabase
+email service is rate-limited and intended for development; configure custom
+SMTP before sharing the app widely.
 
 ### 1.4 Create your first profile
 
@@ -96,7 +98,8 @@ Eclipse Temurin 25, and runs as a single Spring Boot jar.
    from section 1.2.
 4. Set `APP_CORS_ALLOWED_ORIGINS` to your Vercel domain. You can add a preview
    pattern while testing:
-   `https://reviewit.vercel.app,https://*.vercel.app`.
+   `https://reviewit.vercel.app,https://*.vercel.app`. Remove the wildcard once
+   preview deployments are no longer needed.
 5. Deploy and wait for the health check at `/api/v1/health` to pass.
 
 ### Option B — Manual web service
