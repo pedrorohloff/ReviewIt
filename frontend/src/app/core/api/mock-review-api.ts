@@ -90,7 +90,7 @@ export class MockReviewApi extends ReviewApi {
         contentType: input.contentType,
         genre: input.genre,
         content: input.content,
-        notifyEnabled: false,
+        notifyEnabled: true,
         notifyChannel: 'In-App',
         likeCount: 0,
         commentCount: 0,

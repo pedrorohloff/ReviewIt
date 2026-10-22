@@ -2,7 +2,7 @@ import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import { Observable, Subscription } from 'rxjs';
 import { ApiError, toApiError } from '@app/core/api/api-error';
 import { REVIEW_API } from '@app/core/api/review-api';
-import { Post } from '@app/core/models/post';
+import { NotificationSettingsInput, Post, PostInput } from '@app/core/models/post';
 import { Report } from '@app/core/models/report';
 import { PostCacheService } from './post-cache.service';
 
@@ -65,6 +65,43 @@ export class PostStore {
     if (this.currentId) {
       this.load(this.currentId);
     }
+  }
+
+  /** Adopts a server row (create/update) without another GET. */
+  apply(post: Post): void {
+    this.currentId = post.id;
+    this._post.set(post);
+    this._error.set(null);
+    this._status.set('ready');
+  }
+
+  /** Drops the current post after it was deleted. */
+  forget(id: string): void {
+    if (this.currentId !== id) {
+      return;
+    }
+
+    this.request?.unsubscribe();
+    this.currentId = null;
+    this._post.set(null);
+    this._error.set(null);
+    this._status.set('idle');
+  }
+
+  create(input: PostInput): Observable<Post> {
+    return this.api.createPost(input);
+  }
+
+  update(id: string, input: PostInput): Observable<Post> {
+    return this.api.updatePost(id, input);
+  }
+
+  saveNotificationSettings(id: string, input: NotificationSettingsInput): Observable<Post> {
+    return this.api.updateNotificationSettings(id, input);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.api.deletePost(id);
   }
 
   report(reason: string): Observable<Report> {

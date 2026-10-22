@@ -135,6 +135,18 @@ export class FeedStore {
     this.loadedAt = 0;
   }
 
+  /** Drops a deleted post from the pages already loaded. */
+  removePost(id: string): void {
+    const posts = this._posts();
+
+    if (!posts.some((post) => post.id === id)) {
+      return;
+    }
+
+    this._posts.set(posts.filter((post) => post.id !== id));
+    this._total.set(Math.max(0, this._total() - 1));
+  }
+
   /** Whether the loaded pages are still inside the cache window. */
   isFresh(): boolean {
     return this.loadedAt !== 0 && Date.now() - this.loadedAt <= STALE_AFTER_MS;

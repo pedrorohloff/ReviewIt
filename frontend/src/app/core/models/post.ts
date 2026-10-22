@@ -2,7 +2,8 @@ import { ProfileSummary } from './profile';
 
 export type ContentType = 'Book' | 'Movie' | 'Album' | 'Game';
 export type Genre = 'Action' | 'Romance' | 'Horror' | 'Comedy' | 'Drama';
-export type NotifyChannel = 'None' | 'In-App' | 'Email' | 'Both';
+export const NOTIFY_CHANNELS = ['None', 'In-App', 'Email', 'Both'] as const;
+export type NotifyChannel = (typeof NOTIFY_CHANNELS)[number];
 export type SortOption = 'recent' | 'popular';
 
 export interface Post {
