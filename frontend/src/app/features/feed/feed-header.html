@@ -5,22 +5,29 @@
     <p class="feed-head__count" aria-live="polite">{{ countLabel() }}</p>
   </div>
 
-  <div class="sort" role="group" aria-label="Ordenar reviews">
-    <button
-      type="button"
-      [class.is-active]="sort() === 'recent'"
-      [attr.aria-pressed]="sort() === 'recent'"
-      (click)="setSort('recent')"
-    >
-      Recentes
-    </button>
-    <button
-      type="button"
-      [class.is-active]="sort() === 'popular'"
-      [attr.aria-pressed]="sort() === 'popular'"
-      (click)="setSort('popular')"
-    >
-      Populares
-    </button>
+  <div class="feed-head__actions">
+    <a class="feed-head__new" routerLink="/new">
+      <app-icon name="plus" [size]="16" />
+      Nova review
+    </a>
+
+    <div class="sort" role="group" aria-label="Ordenar reviews">
+      <button
+        type="button"
+        [class.is-active]="sort() === 'recent'"
+        [attr.aria-pressed]="sort() === 'recent'"
+        (click)="setSort('recent')"
+      >
+        Recentes
+      </button>
+      <button
+        type="button"
+        [class.is-active]="sort() === 'popular'"
+        [attr.aria-pressed]="sort() === 'popular'"
+        (click)="setSort('popular')"
+      >
+        Populares
+      </button>
+    </div>
   </div>
 </header>

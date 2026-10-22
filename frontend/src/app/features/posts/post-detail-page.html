@@ -64,6 +64,18 @@
             </div>
 
             <div class="byline__actions">
+              @if (isAuthor()) {
+                <a
+                  class="icon-button"
+                  [routerLink]="['/posts', post.id, 'edit']"
+                  [state]="{ fromFeed: true }"
+                  aria-label="Editar review"
+                  title="Editar"
+                >
+                  <app-icon name="pencil" [size]="17" />
+                </a>
+              }
+
               <button
                 type="button"
                 class="like"

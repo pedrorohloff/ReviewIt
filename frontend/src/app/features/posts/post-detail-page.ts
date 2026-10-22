@@ -16,6 +16,7 @@ import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { toApiError } from '@app/core/api/api-error';
+import { AuthService } from '@app/core/auth/auth.service';
 import { Comment } from '@app/core/models/comment';
 import { ToasterService } from '@app/core/services/toaster.service';
 import { CommentComposer } from '@app/features/comments/comment-composer';
@@ -50,6 +51,7 @@ export class PostDetailPage {
   private readonly store = inject(PostStore);
   private readonly comments = inject(CommentStore);
   private readonly likes = inject(LikeService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly title = inject(Title);
@@ -86,6 +88,11 @@ export class PostDetailPage {
   protected readonly commentCount = computed(() =>
     this.comments.loaded() ? this.comments.total() : (this.post()?.commentCount ?? 0),
   );
+  protected readonly isAuthor = computed(() => {
+    const post = this.post();
+    const user = this.auth.user();
+    return !!post && !!user && post.author.id === user.id;
+  });
 
   protected readonly pendingDelete = signal<Comment | null>(null);
   protected readonly deleting = signal(false);

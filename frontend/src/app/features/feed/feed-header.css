@@ -31,6 +31,35 @@
   font-size: 0.78125rem;
 }
 
+.feed-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.feed-head__new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+.feed-head__new:hover {
+  border-color: var(--color-ink-strong);
+  background: var(--color-ink-strong);
+}
+
 .sort {
   display: inline-flex;
   flex: 0 0 auto;
@@ -73,8 +102,12 @@
     font-size: 1.6875rem;
   }
 
-  .sort {
+  .feed-head__actions {
     width: 100%;
+  }
+
+  .sort {
+    flex: 1 1 auto;
   }
 
   .sort button {
