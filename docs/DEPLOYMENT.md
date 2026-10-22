@@ -54,6 +54,10 @@ The JWKS URL must be the public discovery endpoint
 `/auth/v1/keys` path requires an API key header and is **not** a drop-in
 replacement. Both RSA and ECDSA keys are supported by the backend.
 
+If the project still uses the **legacy HS256 shared secret**, migrate it to an
+asymmetric signing key in **Authentication → JWT Keys** (RSA or ECC). The
+backend verifies signatures with the public JWKS and does not accept HS256.
+
 ### 1.3 Configure authentication URLs
 
 In **Authentication → URL Configuration**:
@@ -254,6 +258,7 @@ in `src/environments/environment.development.ts` (gitignored) or in
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `401` on every API call | Missing/expired token, wrong issuer, or JWKS URL | Check the browser request `Authorization` header; verify `SUPABASE_JWT_ISSUER` and the JWKS URL |
+| Tokens are HS256 / no keys in JWKS | Legacy shared-secret signing | Migrate the project to an RSA or ECC signing key; the backend only accepts asymmetric JWTs |
 | Backend logs `No API key found` for JWKS | `SUPABASE_JWT_JWKS_URL` uses `/auth/v1/keys` | Use `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` |
 | CORS error in the browser | Origin not in `APP_CORS_ALLOWED_ORIGINS`, or API redeployed without it | Add the exact origin (scheme + host, no trailing slash) and redeploy |
 | Magic link goes to `localhost` | Supabase Site URL / Redirect URLs still point to dev | Update Authentication → URL Configuration |
