@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
+import { unsavedChangesGuard } from './features/posts/unsaved-changes.guard';
 import { AppShell } from './layout/app-shell/app-shell';
 
 export const routes: Routes = [
@@ -21,6 +23,22 @@ export const routes: Routes = [
         title: 'Review · ReviewIt',
         loadComponent: () =>
           import('./features/posts/post-detail-page').then((m) => m.PostDetailPage),
+      },
+      {
+        path: 'new',
+        title: 'Nova review · ReviewIt',
+        canActivate: [authGuard],
+        canDeactivate: [unsavedChangesGuard],
+        loadComponent: () =>
+          import('./features/posts/post-editor-page').then((m) => m.PostEditorPage),
+      },
+      {
+        path: 'posts/:id/edit',
+        title: 'Editar review · ReviewIt',
+        canActivate: [authGuard],
+        canDeactivate: [unsavedChangesGuard],
+        loadComponent: () =>
+          import('./features/posts/post-editor-page').then((m) => m.PostEditorPage),
       },
       {
         path: '403',

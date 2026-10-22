@@ -7,3 +7,15 @@
     <router-outlet />
   </main>
 </div>
+
+@if (unsaved.open()) {
+  <app-confirm-dialog
+    title="Descartar alterações?"
+    [message]="unsaved.message()"
+    confirmLabel="Descartar"
+    cancelLabel="Continuar editando"
+    tone="danger"
+    (confirmed)="unsaved.resolve(true)"
+    (cancelled)="unsaved.resolve(false)"
+  />
+}

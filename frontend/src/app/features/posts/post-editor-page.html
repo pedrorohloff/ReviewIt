@@ -1,0 +1,214 @@
+<section class="editor-panel" role="region" aria-label="Editor de review" tabindex="0">
+  <div class="editor-column">
+    <button type="button" class="back" (click)="goBack()">
+      <app-icon name="arrow-left" [size]="16" />
+      Voltar
+    </button>
+
+    @if (isEdit() && status() === 'loading' && !post()) {
+      <div class="skeleton" role="status">
+        <span class="skeleton__label">Carregando review…</span>
+        <div class="skeleton__line" aria-hidden="true"></div>
+        <div class="skeleton__line skeleton__line--medium" aria-hidden="true"></div>
+      </div>
+    } @else if (isEdit() && status() === 'notFound') {
+      <div class="state" role="alert">
+        <p class="state__title">Review não encontrada</p>
+        <p class="state__copy">Ela pode ter sido removida ou o link está incorreto.</p>
+        <a class="state__action" routerLink="/">Voltar para o feed</a>
+      </div>
+    } @else if (isEdit() && status() === 'error' && !post()) {
+      <div class="state" role="alert">
+        <p class="state__title">Não foi possível carregar a review</p>
+        <p class="state__copy">Tente novamente em alguns instantes.</p>
+        <button type="button" class="state__action" (click)="retry()">Tentar novamente</button>
+      </div>
+    } @else if (forbidden()) {
+      <div class="state" role="alert">
+        <p class="state__title">Você não pode editar esta review</p>
+        <p class="state__copy">Só o autor pode alterar o texto, o tipo ou o gênero.</p>
+        <a class="state__action" [routerLink]="['/posts', id()]">Voltar para a review</a>
+      </div>
+    } @else {
+      <header class="editor__head">
+        <p class="editor__eyebrow">{{ isEdit() ? 'Sua review' : 'Comunidade' }}</p>
+        <h1>{{ isEdit() ? 'Editar review' : 'Nova review' }}</h1>
+        <p class="editor__lead">
+          Escreva com calma. O texto aparece na prévia do lado enquanto você digita.
+        </p>
+      </header>
+
+      <form class="editor__grid" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="editor__form">
+          <div class="field">
+            <label class="field__label" for="review-title">Título</label>
+            <input
+              id="review-title"
+              type="text"
+              class="field__input"
+              formControlName="title"
+              maxlength="200"
+              autocomplete="off"
+              placeholder="O que você está avaliando?"
+              [attr.aria-invalid]="showError('title') ? 'true' : null"
+              [attr.aria-describedby]="'review-title-hint'"
+            />
+            <div class="field__foot" id="review-title-hint">
+              <span class="field__hint" [class.field__hint--error]="showError('title')">
+                {{ titleMessage() || 'Entre 5 e 200 caracteres.' }}
+              </span>
+              <span class="field__count">{{ titleLength() }}/200</span>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="review-type">Tipo</label>
+              <select
+                id="review-type"
+                class="field__input field__select"
+                formControlName="contentType"
+                [attr.aria-invalid]="showError('contentType') ? 'true' : null"
+                [attr.aria-describedby]="'review-type-hint'"
+              >
+                <option [ngValue]="null">Selecione</option>
+                @for (option of contentTypeOptions; track option[0]) {
+                  <option [ngValue]="option[0]">{{ option[1] }}</option>
+                }
+              </select>
+              <span
+                class="field__hint"
+                id="review-type-hint"
+                [class.field__hint--error]="showError('contentType')"
+              >
+                {{ typeMessage() || 'Livro, filme, álbum ou jogo.' }}
+              </span>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="review-genre">Gênero</label>
+              <select
+                id="review-genre"
+                class="field__input field__select"
+                formControlName="genre"
+                [attr.aria-invalid]="showError('genre') ? 'true' : null"
+                [attr.aria-describedby]="'review-genre-hint'"
+              >
+                <option [ngValue]="null">Selecione</option>
+                @for (option of genreOptions; track option[0]) {
+                  <option [ngValue]="option[0]">{{ option[1] }}</option>
+                }
+              </select>
+              <span
+                class="field__hint"
+                id="review-genre-hint"
+                [class.field__hint--error]="showError('genre')"
+              >
+                {{ genreMessage() || 'O gênero principal da obra.' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="review-content">Sua review</label>
+            <textarea
+              id="review-content"
+              class="field__input field__textarea"
+              formControlName="content"
+              rows="10"
+              maxlength="5000"
+              placeholder="Conte o que funcionou, o que não funcionou e para quem você recomenda."
+              [attr.aria-invalid]="showError('content') ? 'true' : null"
+              aria-describedby="review-content-hint"
+            ></textarea>
+            <div class="field__foot" id="review-content-hint">
+              <span class="field__hint" [class.field__hint--error]="showError('content')">
+                {{ contentMessage() || 'Entre 10 e 5.000 caracteres.' }}
+              </span>
+              <span class="field__count">{{ contentLength() }}/5000</span>
+            </div>
+          </div>
+
+          <fieldset class="notify">
+            <legend class="notify__legend">Notificações</legend>
+
+            <div class="notify__row">
+              <span class="notify__copy" id="notify-label">
+                <span class="notify__label">Avisar-me sobre interações</span>
+                <span class="notify__hint">Comentários e curtidas nesta review.</span>
+              </span>
+
+              <button
+                type="button"
+                class="switch"
+                role="switch"
+                [class.switch--on]="notifyOn()"
+                [attr.aria-checked]="notifyOn() ? 'true' : 'false'"
+                aria-labelledby="notify-label"
+                (click)="toggleNotify()"
+              >
+                <span class="switch__thumb"></span>
+              </button>
+            </div>
+
+            <div class="notify__row">
+              <label class="notify__label" for="notify-channel">Canal</label>
+              <select
+                id="notify-channel"
+                class="field__input field__select notify__select"
+                formControlName="notifyChannel"
+              >
+                @for (option of channelOptions; track option[0]) {
+                  <option [ngValue]="option[0]">{{ option[1] }}</option>
+                }
+              </select>
+            </div>
+          </fieldset>
+
+          <div class="editor__actions">
+            @if (isEdit()) {
+              <button type="button" class="btn btn--danger-ghost" (click)="askDelete()">
+                <app-icon name="trash" [size]="16" />
+                Excluir review
+              </button>
+            }
+
+            <div class="editor__actions-end">
+              <button type="button" class="btn btn--ghost" (click)="goBack()">Cancelar</button>
+              <button type="submit" class="btn" [disabled]="saving()">
+                {{ saveLabel() }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="editor__preview" aria-label="Prévia da review">
+          <p class="editor__preview-label">Prévia</p>
+          <app-review-preview
+            [draft]="draft()"
+            [authorName]="authorName()"
+            [authorAvatar]="authorAvatar()"
+            [likeCount]="post()?.likeCount ?? 0"
+            [commentCount]="post()?.commentCount ?? 0"
+          />
+          <p class="editor__preview-note">
+            É assim que a review aparece no feed. A capa é gerada a partir do tipo e do título.
+          </p>
+        </aside>
+      </form>
+    }
+  </div>
+
+  @if (deleteOpen()) {
+    <app-confirm-dialog
+      title="Excluir review"
+      message="Excluir esta review? Essa ação não pode ser desfeita."
+      confirmLabel="Excluir"
+      busyLabel="Excluindo…"
+      tone="danger"
+      [busy]="deleting()"
+      (confirmed)="confirmDelete()"
+      (cancelled)="cancelDelete()"
+    />
+  }
+</section>

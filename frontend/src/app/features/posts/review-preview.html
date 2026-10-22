@@ -1,0 +1,40 @@
+<article class="preview">
+  @if (draft().contentType; as type) {
+    <app-review-cover class="preview__cover" [type]="type" [title]="draft().title" />
+  } @else {
+    <div class="preview__cover preview__cover--empty"></div>
+  }
+
+  <div class="preview__body">
+    <div class="preview__meta">
+      @if (typeLabel()) {
+        <span class="meta-chip meta-chip--type">{{ typeLabel() }}</span>
+      }
+      @if (genreLabel()) {
+        <span class="meta-chip">{{ genreLabel() }}</span>
+      }
+      <span class="preview__time">agora</span>
+    </div>
+
+    <h2 [class.preview__title--empty]="placeholder()">{{ title() }}</h2>
+
+    <div class="preview__author">
+      <app-avatar [name]="authorName()" [url]="authorAvatar()" [size]="28" />
+      <span>{{ authorName() }}</span>
+    </div>
+
+    <p class="preview__excerpt" [class.preview__excerpt--empty]="placeholder()">{{ excerpt() }}</p>
+
+    <footer class="preview__foot">
+      <span class="preview__stat">
+        <app-icon name="heart" [size]="16" />
+        {{ likeCount() }}
+      </span>
+      <span class="preview__stat">
+        <app-icon name="message" [size]="16" />
+        {{ commentCount() }}
+      </span>
+      <span class="preview__read-more">ler mais</span>
+    </footer>
+  </div>
+</article>

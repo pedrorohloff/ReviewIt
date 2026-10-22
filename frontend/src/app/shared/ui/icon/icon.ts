@@ -8,6 +8,8 @@ export type IconName =
   | 'message'
   | 'arrow-right'
   | 'arrow-left'
+  | 'plus'
+  | 'pencil'
   | 'flag'
   | 'trash'
   | 'share'

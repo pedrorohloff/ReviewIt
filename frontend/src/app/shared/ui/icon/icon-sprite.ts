@@ -54,6 +54,18 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         <path d="m12 19-7-7 7-7" />
       </symbol>
 
+      <symbol id="icon-plus" viewBox="0 0 24 24">
+        <path d="M5 12h14" />
+        <path d="M12 5v14" />
+      </symbol>
+
+      <symbol id="icon-pencil" viewBox="0 0 24 24">
+        <path
+          d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+        />
+        <path d="m15 5 4 4" />
+      </symbol>
+
       <symbol id="icon-flag" viewBox="0 0 24 24">
         <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1Z" />
         <line x1="4" x2="4" y1="22" y2="15" />

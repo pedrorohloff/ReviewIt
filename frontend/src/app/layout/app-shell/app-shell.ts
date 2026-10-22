@@ -1,12 +1,16 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { UnsavedChangesService } from '@app/core/services/unsaved-changes.service';
+import { ConfirmDialog } from '@app/shared/ui/confirm-dialog/confirm-dialog';
 import { TopBar } from '@app/layout/top-bar/top-bar';
 
 @Component({
   selector: 'app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, TopBar],
+  imports: [ConfirmDialog, RouterOutlet, TopBar],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.css',
 })
-export class AppShell {}
+export class AppShell {
+  protected readonly unsaved = inject(UnsavedChangesService);
+}
