@@ -262,6 +262,23 @@ Add `org.flywaydb:flyway-core` and `flyway-database-postgresql`, then add a
 already exist in `V1`–`V3`). Flyway would then create the whole schema automatically on
 startup and in tests.
 
+### Seed data (optional)
+
+The `seed/` tool creates 1,000 fake profiles, 5,000 reviews, 25,000 comments and likes. It
+uses deterministic `5eed...` UUIDs, so resetting removes only seeded rows:
+
+```bash
+cd seed
+npm install
+npm run seed             # add data
+npm run seed:reset       # delete the 5eed... rows and recreate
+```
+
+The script reads the same `.env.properties` values used by Spring Boot. Fake profiles are
+`public.profiles` rows only and cannot log in. If the session pooler on 5432 is full, the
+script falls back to 6543 or use `SEED_DB_PORT=6543` explicitly. See
+[`seed/README.md`](../seed/README.md) for counts, namespaces and reset safety.
+
 ---
 
 ## 6. API endpoints

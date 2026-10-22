@@ -1,0 +1,15 @@
+{
+  "name": "reviewit-seed",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic seed data for the ReviewIt community",
+  "scripts": {
+    "seed": "node seed.mjs",
+    "seed:reset": "node seed.mjs --reset --yes",
+    "dry-run": "node seed.mjs --dry-run"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}

@@ -245,6 +245,7 @@ in `src/environments/environment.development.ts` (gitignored) or in
 
 - [ ] Supabase schema executed; tables present in Table Editor.
 - [ ] `V4__provision_profiles_on_signup.sql` executed; the `on_auth_user_created` trigger exists.
+- [ ] Seed data loaded with `seed/` if the feed should start populated (see [`seed/README.md`](../seed/README.md)).
 - [ ] New user receives a `profiles` row automatically (no manual insert).
 - [ ] Backend health check returns 200.
 - [ ] CORS preflight returns the frontend origin.

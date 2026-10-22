@@ -24,6 +24,7 @@ src/main/java/com/pedrorohloff/
   shared/          base entities, exceptions, advice, config, health controller
   exception/       domain exceptions
 frontend/          Angular app
+seed/              deterministic community data (profiles, reviews, comments, likes)
 docs/              API, database/local setup, deployment, demo script
 ```
 
@@ -98,6 +99,29 @@ npm run e2e           # Playwright desktop + mobile (install Chromium once)
 
 See [`frontend/README.md`](frontend/README.md) for architecture and runtime
 configuration.
+
+## Seed data
+
+The `seed/` tool fills the Supabase database with a believable community:
+
+- 1,000 fake profiles (profiles only; they cannot sign in);
+- 5,000 reviews based on 250 real books, films, albums, series and games;
+- 25,000 comments;
+- likes on posts and comments.
+
+```bash
+cd seed
+npm install
+npm run dry-run          # print totals and a sample, no database access
+npm run seed             # insert the data
+npm run seed:reset       # remove only 5eed... rows and recreate
+```
+
+The script reads `SUPABASE_DB_URL`, `SUPABASE_DB_USERNAME` and
+`SUPABASE_DB_PASSWORD` from the environment or the root `.env.properties`.
+`SEED_DB_PORT=6543` forces the Supabase transaction pooler. Reset never touches
+real accounts or the real post; see [`seed/README.md`](seed/README.md) for the
+safety rules and deterministic UUID namespaces.
 
 ## Deployment
 
