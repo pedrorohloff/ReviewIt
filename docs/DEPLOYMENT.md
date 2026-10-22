@@ -74,8 +74,8 @@ SMTP before sharing the app widely.
 ### 1.4 Create your first profile
 
 Sign-in creates a Supabase `auth.users` row, but **the app does not have a
-self-service onboarding screen yet**. Create the matching `profiles` row once,
-using the user's UUID and a unique username:
+self-service onboarding screen yet**. Sign in once with the magic link, then
+create the matching `profiles` row using the user's UUID and a unique username:
 
 ```sql
 insert into public.profiles (id, username, role, account_status)
