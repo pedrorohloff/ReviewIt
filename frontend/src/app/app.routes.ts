@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { moderatorGuard } from './core/auth/moderator.guard';
 import { unsavedChangesGuard } from './features/posts/unsaved-changes.guard';
 import { AppShell } from './layout/app-shell/app-shell';
 
@@ -52,6 +53,13 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () =>
           import('./features/notifications/notifications-page').then((m) => m.NotificationsPage),
+      },
+      {
+        path: 'moderation',
+        title: 'Moderação · ReviewIt',
+        canActivate: [authGuard, moderatorGuard],
+        loadComponent: () =>
+          import('./features/moderation/moderation-page').then((m) => m.ModerationPage),
       },
       {
         path: '403',

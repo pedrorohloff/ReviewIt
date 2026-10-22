@@ -23,6 +23,7 @@ export type IconName =
   | 'bell'
   | 'log-out'
   | 'log-in'
+  | 'shield'
   | 'circle-check'
   | 'triangle-alert'
   | 'info';

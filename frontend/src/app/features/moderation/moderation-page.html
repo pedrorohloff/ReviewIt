@@ -1,0 +1,214 @@
+<section class="moderation-layout" aria-labelledby="moderation-title">
+  <div
+    #moderationPanel
+    class="moderation-panel"
+    role="region"
+    aria-label="Moderação"
+    tabindex="0"
+  >
+    <div class="moderation-column">
+      <header class="moderation-head">
+        <p class="moderation-head__eyebrow">Curadoria</p>
+        <h1 id="moderation-title">Moderação</h1>
+        @if (countLabel()) {
+          <p class="moderation-head__count">{{ countLabel() }}</p>
+        }
+      </header>
+
+      <div class="mod-tabs" role="group" aria-label="Filtrar denúncias">
+        <button
+          type="button"
+          class="mod-tabs__tab"
+          [class.mod-tabs__tab--active]="tab() === 'Pending'"
+          [attr.aria-pressed]="tab() === 'Pending'"
+          (click)="setTab('Pending')"
+        >
+          Pendentes
+        </button>
+        <button
+          type="button"
+          class="mod-tabs__tab"
+          [class.mod-tabs__tab--active]="tab() === 'Resolved'"
+          [attr.aria-pressed]="tab() === 'Resolved'"
+          (click)="setTab('Resolved')"
+        >
+          Resolvidas
+        </button>
+      </div>
+
+      @if (status() === 'idle' || status() === 'loading') {
+        <div class="mod-skeleton" role="status">
+          <span class="mod-sr">Carregando denúncias…</span>
+          @for (row of skeletonRows; track row) {
+            <div class="mod-skeleton__row" aria-hidden="true">
+              <span class="mod-skeleton__line mod-skeleton__line--title"></span>
+              <span class="mod-skeleton__line"></span>
+              <span class="mod-skeleton__line mod-skeleton__line--short"></span>
+            </div>
+          }
+        </div>
+      } @else if (status() === 'error') {
+        <div class="mod-status" role="alert">
+          <p class="mod-status__title">Não foi possível carregar as denúncias</p>
+          <p class="mod-status__copy">{{ errorMessage() }}</p>
+          <button type="button" class="mod-action" (click)="retry()">Tentar novamente</button>
+        </div>
+      } @else if (status() === 'empty') {
+        <div class="mod-empty">
+          <span class="mod-empty__icon" aria-hidden="true">
+            <app-icon name="shield" [size]="22" />
+          </span>
+          @if (tab() === 'Pending') {
+            <p class="mod-empty__title">Fila em dia</p>
+            <p class="mod-empty__copy">
+              Nenhuma denúncia pendente. Quando alguém denunciar uma review ou comentário, ela
+              aparece aqui.
+            </p>
+            <a class="mod-empty__action" routerLink="/">Voltar para o feed</a>
+          } @else {
+            <p class="mod-empty__title">Nada resolvido ainda</p>
+            <p class="mod-empty__copy">
+              As denúncias analisadas pela equipe ficam registradas nesta aba.
+            </p>
+          }
+        </div>
+      } @else {
+        <ul class="report-list" [attr.aria-busy]="status() === 'loadingMore'">
+          @for (report of reports(); track report.id) {
+            <li class="report">
+              <div class="report__main">
+                <p class="report__meta">
+                  <span
+                    class="report-status"
+                    [class.report-status--resolved]="report.status === 'Resolved'"
+                  >
+                    {{ statusLabel(report.status) }}
+                  </span>
+
+                  @if (reporterLoading(report)) {
+                    <span class="report__meta-muted">Denúncia de…</span>
+                  } @else if (reporterLabel(report); as reporter) {
+                    <span>Denúncia de <strong>{{ reporter }}</strong></span>
+                  } @else {
+                    <span class="report__meta-muted">Denúncia de conta removida</span>
+                  }
+                </p>
+
+                <p class="report__reason">“{{ report.reason }}”</p>
+
+                <p class="report__target">
+                  @if (targetLoading(report)) {
+                    <span class="report__meta-muted">Carregando conteúdo…</span>
+                  } @else if (targetFor(report); as target) {
+                    <span class="report__kind">
+                      {{ target.kind === 'post' ? 'Review' : 'Comentário' }}
+                    </span>
+                    <a
+                      class="report__link"
+                      [routerLink]="['/posts', target.postId]"
+                      [fragment]="target.kind === 'comment' ? 'comments' : undefined"
+                    >
+                      {{ target.label }}
+                    </a>
+                    <span class="report__meta-muted">por {{ target.author }}</span>
+                  } @else {
+                    <span class="report__meta-muted">Conteúdo não encontrado</span>
+                  }
+                </p>
+              </div>
+
+              <div class="report__side">
+                @if (report.status === 'Pending') {
+                  <button type="button" class="report__action" (click)="openAction(report)">
+                    Aplicar ação
+                  </button>
+                } @else {
+                  <span class="report__done">
+                    <app-icon name="check" [size]="14" />
+                    Resolvida
+                  </span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        @if (status() === 'loadingMore') {
+          <p class="mod-loading" role="status">Carregando mais denúncias…</p>
+        } @else if (status() === 'errorMore') {
+          <div class="mod-status mod-status--inline" role="alert">
+            <p class="mod-status__copy">{{ errorMessage() }}</p>
+            <button type="button" class="mod-action" (click)="retry()">Tentar novamente</button>
+          </div>
+        } @else if (hasNext()) {
+          <button type="button" class="mod-more" (click)="loadMore()">
+            Carregar mais denúncias
+          </button>
+        } @else {
+          <p class="mod-end">Você chegou ao fim da fila.</p>
+        }
+      }
+    </div>
+  </div>
+
+  <app-scroll-rail [target]="panel()?.nativeElement ?? null" />
+</section>
+
+@if (dialogReport(); as report) {
+  <app-confirm-dialog
+    title="Aplicar ação"
+    [message]="actionMessage()"
+    confirmLabel="Confirmar ação"
+    busyLabel="Aplicando…"
+    [busy]="applying()"
+    [confirmDisabled]="confirmDisabled()"
+    [tone]="actionTone()"
+    (confirmed)="confirmAction()"
+    (cancelled)="closeDialog()"
+  >
+    <div class="mod-field">
+      <label class="mod-field__label" for="moderation-action">Ação</label>
+      <select
+        id="moderation-action"
+        class="mod-field__input"
+        data-autofocus
+        [value]="actionType()"
+        (change)="onActionChange($event)"
+      >
+        @for (option of actionOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+    @if (actionType() === 'Suspend') {
+      <div class="mod-field">
+        <label class="mod-field__label" for="moderation-days">Dias de suspensão</label>
+        <input
+          id="moderation-days"
+          class="mod-field__input"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          max="365"
+          step="1"
+          [value]="durationDays()"
+          (input)="onDaysInput($event)"
+          aria-describedby="moderation-days-hint"
+        />
+        <p class="mod-field__hint" id="moderation-days-hint">Entre 1 e 365 dias.</p>
+      </div>
+    }
+
+    <div class="mod-context">
+      <p class="mod-context__label">Denúncia</p>
+      <p class="mod-context__reason">“{{ report.reason }}”</p>
+      @if (dialogTarget(); as target) {
+        <p class="mod-context__target">
+          {{ target.kind === 'post' ? 'Review' : 'Comentário' }} de {{ target.author }}:
+          {{ target.label }}
+        </p>
+      }
+    </div>
+  </app-confirm-dialog>
+}

@@ -107,7 +107,7 @@ export function buildMockState(): MockState {
     posts,
     comments,
     notifications: buildNotifications(posts),
-    reports: buildReports(posts),
+    reports: buildReports(posts, comments),
     actions: [],
     profiles: MOCK_PROFILES.map((item) => ({ ...item })),
     likedPostIds,
@@ -310,9 +310,11 @@ function buildNotifications(posts: Post[]): Notification[] {
   return notifications;
 }
 
-function buildReports(posts: Post[]): Report[] {
+function buildReports(posts: Post[], comments: Comment[]): Report[] {
   const first = posts[0];
   const second = posts[1];
+  const third = posts[2];
+  const comment = comments[0];
 
   return [
     {
@@ -330,6 +332,22 @@ function buildReports(posts: Post[]): Report[] {
       commentId: null,
       reason: 'Possível divulgação sem relação com a review.',
       status: 'Pending',
+    },
+    {
+      id: '50000000-0000-4000-8000-000000000003',
+      reporterId: MOCK_PROFILES[3]?.id ?? '',
+      postId: null,
+      commentId: comment?.id ?? null,
+      reason: 'Comentário ofensivo e fora do tom da conversa.',
+      status: 'Pending',
+    },
+    {
+      id: '50000000-0000-4000-8000-000000000004',
+      reporterId: MOCK_PROFILES[4]?.id ?? '',
+      postId: third?.id ?? null,
+      commentId: null,
+      reason: 'Denúncia já analisada pela equipe.',
+      status: 'Resolved',
     },
   ];
 }

@@ -36,6 +36,7 @@ export abstract class ReviewApi {
   ): Observable<Post>;
 
   abstract listComments(postId: string, page: number, pageSize: number): Observable<CommentPage>;
+  abstract getComment(id: string): Observable<Comment>;
   abstract createComment(postId: string, input: CommentInput): Observable<Comment>;
   abstract deleteComment(id: string): Observable<void>;
 

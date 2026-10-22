@@ -78,6 +78,10 @@ export class HttpReviewApi extends ReviewApi {
     return this.http.get<CommentPage>(`${this.baseUrl}/posts/${postId}/comments`, { params });
   }
 
+  getComment(id: string): Observable<Comment> {
+    return this.http.get<Comment>(`${this.baseUrl}/comments/${id}`);
+  }
+
   createComment(postId: string, input: CommentInput): Observable<Comment> {
     return this.http.post<Comment>(`${this.baseUrl}/posts/${postId}/comments`, input);
   }

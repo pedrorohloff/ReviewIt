@@ -169,6 +169,17 @@ export class MockReviewApi extends ReviewApi {
     });
   }
 
+  getComment(id: string): Observable<Comment> {
+    return this.respond(() => {
+      const comment = this.state.comments.find((candidate) => candidate.id === id);
+      if (!comment) {
+        throw notFound('Comentário não encontrado.');
+      }
+
+      return { ...comment, author: { ...comment.author } };
+    });
+  }
+
   createComment(postId: string, input: CommentInput): Observable<Comment> {
     return this.respond(() => {
       const post = this.requirePost(postId);
@@ -363,14 +374,32 @@ export class MockReviewApi extends ReviewApi {
         throw notFound('Denúncia não encontrada.');
       }
 
+      if (report.status === 'Resolved') {
+        throw new ApiError(400, 'Dados inválidos', 'Esta denúncia já foi resolvida.');
+      }
+
       const post = report.postId
         ? this.state.posts.find((candidate) => candidate.id === report.postId)
         : undefined;
+      const comment = report.commentId
+        ? this.state.comments.find((candidate) => candidate.id === report.commentId)
+        : undefined;
+
+      if ((report.postId && !post) || (report.commentId && !comment)) {
+        throw notFound('Conteúdo da denúncia não encontrado.');
+      }
+
+      if (input.actionType === 'Suspend' && (!input.durationDays || input.durationDays < 1)) {
+        throw new ApiError(400, 'Dados inválidos', 'Informe a duração da suspensão em dias.');
+      }
+
+      const targetUserId = post?.author.id ?? comment?.author.id ?? null;
+      this.applyModerationSideEffect(report, input, targetUserId);
 
       const action: ModerationAction = {
         reportId,
         moderatorId: DEMO_USER.id,
-        targetUserId: post?.author.id ?? null,
+        targetUserId,
         actionType: input.actionType,
         durationDays: input.durationDays ?? null,
       };
@@ -381,6 +410,51 @@ export class MockReviewApi extends ReviewApi {
 
       return { ...action };
     });
+  }
+
+  private applyModerationSideEffect(
+    report: Report,
+    input: ModerationActionInput,
+    targetUserId: string | null,
+  ): void {
+    if (input.actionType === 'Remove') {
+      if (report.postId) {
+        this.state.posts = this.state.posts.filter((post) => post.id !== report.postId);
+        this.state.comments = this.state.comments.filter(
+          (comment) => comment.postId !== report.postId,
+        );
+        this.state.notifications = this.state.notifications.filter(
+          (notification) => notification.postId !== report.postId,
+        );
+        return;
+      }
+
+      if (report.commentId) {
+        const removed = this.state.comments.find((comment) => comment.id === report.commentId);
+        this.state.comments = this.state.comments.filter(
+          (comment) => comment.id !== report.commentId,
+        );
+
+        const post = this.state.posts.find((candidate) => candidate.id === removed?.postId);
+        if (post) {
+          post.commentCount = Math.max(0, post.commentCount - 1);
+        }
+      }
+      return;
+    }
+
+    if ((input.actionType === 'Suspend' || input.actionType === 'Ban') && targetUserId) {
+      const profile = this.state.profiles.find((candidate) => candidate.id === targetUserId);
+      if (!profile) {
+        return;
+      }
+
+      profile.status = input.actionType === 'Ban' ? 'Banned' : 'Suspended';
+      profile.suspendedUntil =
+        input.actionType === 'Suspend'
+          ? new Date(Date.now() + (input.durationDays ?? 0) * 86_400_000).toISOString()
+          : null;
+    }
   }
 
   private filteredPosts(params: ListPostsParams): Post[] {
