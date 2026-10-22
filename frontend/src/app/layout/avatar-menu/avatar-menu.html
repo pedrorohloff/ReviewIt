@@ -46,6 +46,13 @@
         </a>
       }
 
+      @if (canModerate()) {
+        <a class="account__item" role="menuitem" routerLink="/moderation" (click)="close(false)">
+          <app-icon name="shield" [size]="17" />
+          Moderação
+        </a>
+      }
+
       <a class="account__item" role="menuitem" routerLink="/new" (click)="close(false)">
         <app-icon name="plus" [size]="17" />
         Nova review

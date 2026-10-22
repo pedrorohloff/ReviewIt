@@ -47,6 +47,10 @@ export class AvatarMenu {
   protected readonly username = computed(() => this.user()?.username ?? 'Visitante');
   protected readonly isDemo = this.auth.isDemo;
   protected readonly isAuthenticated = this.auth.isAuthenticated;
+  protected readonly canModerate = computed(() => {
+    const role = this.auth.role();
+    return role === 'Moderator' || role === 'Admin';
+  });
 
   constructor() {
     this.router.events
