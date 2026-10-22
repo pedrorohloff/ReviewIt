@@ -1,0 +1,206 @@
+<section class="profile-layout" aria-labelledby="profile-title">
+  <div
+    #profilePanel
+    class="profile-panel"
+    role="region"
+    aria-label="Perfil"
+    tabindex="0"
+  >
+    <div class="profile-column">
+      @if (status() === 'notFound') {
+        <div class="profile-status" role="alert">
+          <p class="profile-status__title">Perfil não encontrado</p>
+          <p class="profile-status__copy">
+            Esta conta não existe ou foi removida. Talvez o endereço esteja incompleto.
+          </p>
+          <a class="profile-action" routerLink="/">Voltar para o feed</a>
+        </div>
+      } @else if (status() === 'error' && !profile()) {
+        <div class="profile-status" role="alert">
+          <p class="profile-status__title">Não foi possível carregar este perfil</p>
+          <p class="profile-status__copy">{{ errorMessage() }}</p>
+          <button type="button" class="profile-action" (click)="retryProfile()">
+            Tentar novamente
+          </button>
+        </div>
+      } @else if (!profile()) {
+        <header class="profile-head" aria-hidden="true">
+          <span class="profile-head__avatar-skeleton"></span>
+          <span class="profile-head__lines">
+            <span class="profile-head__line profile-head__line--short"></span>
+            <span class="profile-head__line profile-head__line--title"></span>
+            <span class="profile-head__line"></span>
+          </span>
+          <span class="profile-sr" role="status">Carregando perfil…</span>
+        </header>
+        <app-feed-skeleton />
+      } @else {
+        @let author = profile()!;
+
+        <header class="profile-head">
+          <app-avatar [name]="author.username" [url]="author.avatarUrl" [size]="96" />
+
+          <div class="profile-head__id">
+            <p class="profile-head__eyebrow">Perfil</p>
+            <h1 id="profile-title">{{ author.username }}</h1>
+            <p class="profile-head__meta">
+              <span class="role-chip">{{ roleLabel() }}</span>
+              @if (author.status !== 'Active') {
+                <span class="role-chip role-chip--muted">{{ statusLabel() }}</span>
+              }
+              <span class="profile-head__joined">
+                Entrou em {{ author.createdAt | dateFormat: 'long' }}
+              </span>
+            </p>
+          </div>
+
+          <div class="profile-head__actions">
+            @if (isOwn()) {
+              <button type="button" class="profile-btn" (click)="openEdit()">
+                <app-icon name="pencil" [size]="16" />
+                Editar perfil
+              </button>
+              @if (!auth.isDemo()) {
+                <button type="button" class="profile-btn profile-btn--ghost" (click)="signOut()">
+                  <app-icon name="log-out" [size]="16" />
+                  Sair
+                </button>
+              }
+            }
+          </div>
+        </header>
+
+        <section class="profile-reviews" aria-labelledby="profile-reviews-title">
+          <div class="profile-reviews__head">
+            <h2 id="profile-reviews-title">
+              {{ isOwn() ? 'Suas reviews' : 'Reviews de ' + author.username }}
+            </h2>
+            @if (feedStatus() !== 'idle' && feedStatus() !== 'loading' && feedStatus() !== 'error') {
+              <p class="profile-reviews__count">{{ countLabel() }}</p>
+            }
+          </div>
+
+          <div
+            class="profile-reviews__body"
+            [attr.aria-busy]="feedStatus() === 'loading' || feedStatus() === 'loadingMore'"
+          >
+            @if (feedStatus() === 'idle' || feedStatus() === 'loading') {
+              <app-feed-skeleton />
+            } @else if (feedStatus() === 'error') {
+              <div class="profile-status profile-status--inline" role="alert">
+                <p class="profile-status__title">Não foi possível carregar as reviews</p>
+                <p class="profile-status__copy">{{ feedErrorMessage() }}</p>
+                <button type="button" class="profile-action" (click)="retryFeed()">
+                  Tentar novamente
+                </button>
+              </div>
+            } @else if (feedStatus() === 'empty') {
+              <div class="profile-status profile-status--inline">
+                <p class="profile-status__title">Nenhuma review por aqui ainda</p>
+                <p class="profile-status__copy">
+                  @if (isOwn()) {
+                    Você ainda não escreveu nenhuma review.
+                  } @else {
+                    {{ author.username }} ainda não publicou nenhuma review.
+                  }
+                </p>
+                @if (isOwn()) {
+                  <a class="profile-action" routerLink="/new">Escrever review</a>
+                }
+              </div>
+            } @else {
+              <div class="profile-list">
+                @for (post of posts(); track post.id) {
+                  <app-review-card [post]="post" />
+                }
+              </div>
+
+              @if (feedStatus() === 'loadingMore') {
+                <app-feed-skeleton class="profile-append" [count]="2" [compact]="true" />
+              }
+
+              @if (feedStatus() === 'errorMore') {
+                <div class="profile-status profile-status--inline" role="alert">
+                  <p class="profile-status__copy">{{ feedErrorMessage() }}</p>
+                  <button type="button" class="profile-action" (click)="retryFeed()">
+                    Tentar novamente
+                  </button>
+                </div>
+              } @else if (feedStatus() === 'end') {
+                <p class="profile-end">
+                  {{ isOwn() ? 'Fim das suas reviews.' : 'Fim das reviews de ' + author.username + '.' }}
+                </p>
+              } @else if (hasNext()) {
+                <button
+                  type="button"
+                  class="profile-more"
+                  [disabled]="feedStatus() === 'loadingMore'"
+                  (click)="loadMore()"
+                >
+                  Carregar mais reviews
+                </button>
+                <app-feed-sentinel [root]="panel()?.nativeElement ?? null" (reached)="loadMore()" />
+              }
+            }
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+
+  <app-scroll-rail [target]="panel()?.nativeElement ?? null" />
+</section>
+
+@if (editOpen()) {
+  <app-confirm-dialog
+    title="Editar perfil"
+    message="Como você aparece nas reviews e nos comentários."
+    confirmLabel="Salvar"
+    busyLabel="Salvando…"
+    [busy]="editSaving()"
+    [confirmDisabled]="editDisabled()"
+    (confirmed)="saveEdit()"
+    (cancelled)="closeEdit()"
+  >
+    <div class="profile-field">
+      <label class="profile-field__label" for="profile-username">Nome de usuário</label>
+      <input
+        id="profile-username"
+        class="profile-field__input"
+        data-autofocus
+        type="text"
+        autocomplete="nickname"
+        maxlength="50"
+        [value]="editName()"
+        (input)="onNameInput($event)"
+        [attr.aria-invalid]="editName().trim().length > 0 && editName().trim().length < 3"
+        [attr.aria-describedby]="'profile-username-hint'"
+      />
+      <p class="profile-field__hint" id="profile-username-hint">
+        Entre 3 e 50 caracteres.
+      </p>
+    </div>
+
+    <div class="profile-field">
+      <label class="profile-field__label" for="profile-avatar">URL do avatar</label>
+      <input
+        id="profile-avatar"
+        class="profile-field__input"
+        type="url"
+        autocomplete="photo"
+        maxlength="500"
+        placeholder="https://…"
+        [value]="editAvatar()"
+        (input)="onAvatarInput($event)"
+        aria-describedby="profile-avatar-hint"
+      />
+      <p class="profile-field__hint" id="profile-avatar-hint">
+        Opcional, até 500 caracteres. Em branco usa as iniciais do nome.
+      </p>
+    </div>
+
+    @if (editError()) {
+      <p class="profile-field__error" role="alert">{{ editError() }}</p>
+    }
+  </app-confirm-dialog>
+}

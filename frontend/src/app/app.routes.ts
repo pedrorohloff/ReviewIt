@@ -41,6 +41,12 @@ export const routes: Routes = [
           import('./features/posts/post-editor-page').then((m) => m.PostEditorPage),
       },
       {
+        path: 'profile/:id',
+        title: 'Perfil · ReviewIt',
+        loadComponent: () =>
+          import('./features/profile/profile-page').then((m) => m.ProfilePage),
+      },
+      {
         path: '403',
         title: 'Acesso negado · ReviewIt',
         loadComponent: () => import('./pages/forbidden-page').then((m) => m.ForbiddenPage),

@@ -59,7 +59,10 @@
             <div class="byline__who">
               <span class="byline__name">{{ post.author.username }}</span>
               <span class="byline__date">
-                Publicado em {{ post.createdAt | dateFormat: 'long' }}
+                Publicado em {{ post.createdAt | dateFormat: 'long' }} ·
+                <a class="byline__profile" [routerLink]="['/profile', post.author.id]">
+                  Ver perfil
+                </a>
               </span>
             </div>
 

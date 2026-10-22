@@ -148,7 +148,8 @@ describe('FeedPage', () => {
       genre: 'Drama',
       sort: 'popular',
     });
-    expect(cards(fixture)).toBe(3);
+    // Book + Drama in the demo seed (three curated entries + one generated).
+    expect(cards(fixture)).toBe(4);
   });
 
   it('falls back safely for invalid query params', async () => {

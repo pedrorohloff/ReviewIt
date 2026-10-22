@@ -100,6 +100,23 @@ export class AuthService {
     await this.router.navigate(['/login']);
   }
 
+  /** Mirrors an own-profile edit into the session user. */
+  applyProfile(profile: Profile): void {
+    const user = this._user();
+
+    if (!user || user.id !== profile.id) {
+      return;
+    }
+
+    this._user.set({
+      ...user,
+      username: profile.username,
+      avatarUrl: profile.avatarUrl,
+      role: profile.role,
+      status: profile.status,
+    });
+  }
+
   /** Called by the problem interceptor when the backend rejects the token. */
   onUnauthorized(): void {
     if (this.isDemo()) {

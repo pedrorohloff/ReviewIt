@@ -100,7 +100,8 @@ test.describe('feed shell', () => {
     await expect(page.getByText('1 filtro ativo')).toBeVisible();
 
     await page.getByRole('button', { name: 'Drama', exact: true }).click();
-    await expect(page.locator('app-review-card')).toHaveCount(3);
+    // Book + Drama in the demo seed.
+    await expect(page.locator('app-review-card')).toHaveCount(4);
     await expect(page.getByText('2 filtros ativos')).toBeVisible();
 
     await page.keyboard.press('Escape');
@@ -127,7 +128,7 @@ test.describe('feed shell', () => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
 
     await page.goto('/?type=Book&genre=Drama&sort=popular');
-    await expect(page.locator('app-review-card')).toHaveCount(3);
+    await expect(page.locator('app-review-card')).toHaveCount(4);
     await expect(
       page.getByRole('button', { name: 'Filtro, 2 filtros ativos' }),
     ).toBeVisible();

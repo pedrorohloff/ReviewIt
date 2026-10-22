@@ -124,6 +124,19 @@
   font-size: 0.75rem;
 }
 
+.byline__profile {
+  color: var(--color-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.1875rem;
+  transition: text-decoration-color 120ms ease-out;
+}
+
+.byline__profile:hover {
+  text-decoration-color: var(--color-ink);
+}
+
 .byline__actions {
   display: flex;
   align-items: center;
