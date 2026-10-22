@@ -3,6 +3,7 @@ import {
   Component,
   DOCUMENT,
   ElementRef,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -117,10 +118,11 @@ export class PostDetailPage {
       }
     });
 
-    // `/posts/:id#comments` must scroll the panel, not the document. Waiting
-    // for the first page means the panel already has its final height; the
-    // guard keeps likes and edits from scrolling the reader again.
-    effect(() => {
+    // `/posts/:id#comments` must scroll the panel, not the document. It runs
+    // after the render that paints the comment list: scrolling earlier would
+    // hit the panel's current scroll limit and stop halfway. The guard keeps
+    // likes, edits and extra pages from scrolling the reader again.
+    afterRenderEffect(() => {
       const loaded = this.comments.loaded();
       const section = this.commentsSection();
 
