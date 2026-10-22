@@ -43,13 +43,16 @@ In **Project Settings**:
 | `SUPABASE_DB_URL` | Database → Connection string → URI (use the pooler) | `jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require&user=postgres.abcdefghijklmnop` |
 | `SUPABASE_DB_USERNAME` | Pooler connection string user | `postgres.abcdefghijklmnop` |
 | `SUPABASE_DB_PASSWORD` | Database → Database password (reset it if needed) | — |
-| `SUPABASE_JWT_JWKS_URL` | API → JWT Settings → JWKS URL | `https://abcdefghijklmnop.supabase.co/auth/v1/keys` |
+| `SUPABASE_JWT_JWKS_URL` | API → JWT Settings → JWKS URL | `https://abcdefghijklmnop.supabase.co/auth/v1/.well-known/jwks.json` |
 | `SUPABASE_JWT_ISSUER` | API → JWT Settings → issuer | `https://abcdefghijklmnop.supabase.co/auth/v1` |
 
 Use the **session pooler** (port `5432`) rather than the transaction pooler.
 HikariCP keeps prepared statements, and the transaction pooler can reject them.
-If your project exposes the JWKS at `.well-known/jwks.json`, use that exact URL
-instead; both RSA and ECDSA keys are supported by the backend.
+
+The JWKS URL must be the public discovery endpoint
+`https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json`. The older
+`/auth/v1/keys` path requires an API key header and is **not** a drop-in
+replacement. Both RSA and ECDSA keys are supported by the backend.
 
 ### 1.3 Configure authentication URLs
 
@@ -251,6 +254,7 @@ in `src/environments/environment.development.ts` (gitignored) or in
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `401` on every API call | Missing/expired token, wrong issuer, or JWKS URL | Check the browser request `Authorization` header; verify `SUPABASE_JWT_ISSUER` and the JWKS URL |
+| Backend logs `No API key found` for JWKS | `SUPABASE_JWT_JWKS_URL` uses `/auth/v1/keys` | Use `https://<ref>.supabase.co/auth/v1/.well-known/jwks.json` |
 | CORS error in the browser | Origin not in `APP_CORS_ALLOWED_ORIGINS`, or API redeployed without it | Add the exact origin (scheme + host, no trailing slash) and redeploy |
 | Magic link goes to `localhost` | Supabase Site URL / Redirect URLs still point to dev | Update Authentication → URL Configuration |
 | `relation "profiles" does not exist` | Schema block not executed | Run [`RUNNING.md` §5](./RUNNING.md#5-create-the-tables-in-supabase) |

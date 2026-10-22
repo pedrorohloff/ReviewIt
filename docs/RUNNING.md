@@ -35,7 +35,7 @@ SUPABASE_DB_USERNAME=postgres.<project-ref>
 SUPABASE_DB_PASSWORD=<your-database-password>
 
 # JWT
-SUPABASE_JWT_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/keys
+SUPABASE_JWT_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
 SUPABASE_JWT_ISSUER=https://<project-ref>.supabase.co/auth/v1
 
 # CORS (frontend origin)
