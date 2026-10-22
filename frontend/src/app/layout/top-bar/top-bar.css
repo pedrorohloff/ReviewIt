@@ -10,6 +10,36 @@
   align-items: center;
 }
 
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.topbar__brand {
+  flex: 0 0 auto;
+  color: var(--color-ink-strong);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 120ms ease-out;
+}
+
+.topbar__brand:hover {
+  color: var(--color-olive);
+}
+
+.topbar__brand:focus-visible {
+  border-radius: 0.125rem;
+  outline: 2px solid var(--color-ink);
+  outline-offset: 0.25rem;
+}
+
 .topbar__filter {
   position: relative;
   min-width: 0;
@@ -97,11 +127,7 @@
   }
 }
 
-@media (max-width: 1023px) {
-  .topbar {
-    gap: 0.75rem;
-  }
-
+@media (max-width: 1199px) {
   .filter-button {
     width: 3rem;
     padding: 0;
@@ -118,17 +144,35 @@
   }
 }
 
+@media (max-width: 1023px) {
+  .topbar {
+    grid-template-columns: minmax(8.5rem, 1fr) minmax(0, 40rem) minmax(8.5rem, 1fr);
+    gap: 0.75rem;
+  }
+
+  app-search-field {
+    width: 100%;
+    max-width: 40rem;
+    justify-self: center;
+  }
+}
+
 @media (max-width: 639px) {
   .topbar {
     grid-template-areas:
-      'filter . avatar'
+      'left . avatar'
       'search search search';
-    grid-template-columns: 2.75rem minmax(0, 1fr) 3.25rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.625rem 0.75rem;
   }
 
-  .topbar__filter {
-    grid-area: filter;
+  .topbar__left {
+    grid-area: left;
+    gap: 0.625rem;
+  }
+
+  .topbar__brand {
+    font-size: 1.125rem;
   }
 
   app-search-field {

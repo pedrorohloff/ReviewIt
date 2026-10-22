@@ -36,4 +36,20 @@ describe('App', () => {
     expect(element.querySelector('app-top-bar')).toBeTruthy();
     expect(element.querySelector('app-feed-header h1')?.textContent).toContain('Reviews');
   });
+
+  it('shows a brand link back to the feed', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    await TestBed.inject(Router).navigateByUrl('/403');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const brand = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+      '.topbar__brand',
+    );
+
+    expect(brand?.textContent?.trim()).toBe('ReviewIt');
+    expect(brand?.getAttribute('href')).toBe('/');
+  });
 });

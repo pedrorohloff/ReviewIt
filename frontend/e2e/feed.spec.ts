@@ -124,14 +124,29 @@ test.describe('feed shell', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Reviews' })).toBeVisible();
   });
 
-  test('hydrates filters from a deep link and ignores invalid values', async ({ page }, testInfo) => {
+  test('brand link returns to the feed from a post detail', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
+    await page.goto('/');
+    await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
+
+    const postPath = await page.locator('app-review-card .card__link').first().getAttribute('href');
+    await page.goto(postPath!);
+    await expect(page.locator('.detail-panel')).toBeVisible();
+
+    await page.getByRole('link', { name: 'ReviewIt, ir para a página inicial' }).click();
+
+    await expect(page).toHaveURL('/');
+    await expect(page.getByRole('heading', { level: 1, name: 'Reviews' })).toBeVisible();
+  });
+
+  test('hydrates filters from a deep link and ignores invalid values', async ({
+    page,
+  }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'Desktop-only assertion');
 
     await page.goto('/?type=Book&genre=Drama&sort=popular');
     await expect(page.locator('app-review-card')).toHaveCount(4);
-    await expect(
-      page.getByRole('button', { name: 'Filtro, 2 filtros ativos' }),
-    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Filtro, 2 filtros ativos' })).toBeVisible();
 
     await page.goto('/?type=Banana&genre=Aventura&sort=aleatorio');
     await expect(page.locator('app-review-card')).toHaveCount(PAGE_SIZE);
