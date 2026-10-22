@@ -7,16 +7,16 @@ import { getInitials } from '@app/shared/utils/format';
   template: `
     <span
       class="avatar"
+      [class.avatar--initials]="!url()"
       [style.width.rem]="size() / 16"
       [style.height.rem]="size() / 16"
       [style.font-size.rem]="fontSize() / 16"
+      [attr.data-initials]="initials()"
       [attr.aria-label]="'Foto de ' + name()"
       role="img"
     >
       @if (url()) {
         <img [src]="url()" alt="" />
-      } @else {
-        <span aria-hidden="true">{{ initials() }}</span>
       }
     </span>
   `,
@@ -40,6 +40,12 @@ import { getInitials } from '@app/shared/utils/format';
       letter-spacing: 0.02em;
       line-height: 1;
       user-select: none;
+    }
+
+    /* Initials are decorative: rendered by CSS so they never leak into the
+       accessible name of a surrounding interactive element. */
+    .avatar--initials::before {
+      content: attr(data-initials);
     }
 
     img {
