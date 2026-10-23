@@ -9,8 +9,9 @@ The app works in two modes:
 - **Demo (default):** no backend and no Supabase. Reviews, profiles, likes,
   comments, notifications and reports come from a deterministic local mock
   persisted in `localStorage` under `reviewit:mock:v1`.
-- **Real:** Supabase Auth for the magic-link login and the Spring Boot API for
-  data. Configure the Supabase URL/anon key and the API URL.
+- **Real:** the Spring Boot API for data plus three login methods:
+  email/password (Spring), magic link (Supabase) and Google (Supabase OAuth).
+  Configure the Supabase URL/anon key and the API URL.
 
 ## Requirements
 
@@ -59,6 +60,21 @@ The app resolves configuration in two layers:
 - Never put a Supabase `service_role` key or a database password in the
   frontend. The anon/publishable key is public by design.
 
+### Login session
+
+- **Email/password** calls `POST /auth/login` or `POST /auth/register` on the
+  Spring API. The returned 24-hour HS256 JWT is stored in `localStorage` under
+  `reviewit.auth.token`, restored on boot and attached as `Authorization: Bearer`
+  only to API requests. Login/registration requests never carry a stale token.
+- **Magic link** and **Google** use the Supabase client. Supabase persists its
+  own session and `detectSessionInUrl` completes the redirect.
+- On boot the app tries the local JWT first; if it is absent or invalid it falls
+  back to the Supabase session. A failed auth chunk or API timeout must not block
+  bootstrap: the app renders signed out.
+- The Google button is shown only when Supabase's public
+  `/auth/v1/settings` reports `external.google: true`. See
+  [`../docs/GOOGLE_OAUTH.md`](../docs/GOOGLE_OAUTH.md) for the provider setup.
+
 ### Production build with runtime config
 
 ```bash
@@ -101,7 +117,8 @@ Steps 0–8 of `misc/FRONTEND_PLAN.md`:
   skeletons, empty/error/end states and a custom scroll rail;
 - post detail with likes and paginated comments;
 - create/edit review with validation and notification settings;
-- Supabase magic-link auth, route guards, session restoration and demo mode;
+- email/password registration and login, Supabase magic-link and Google OAuth,
+  route guards, local-token/Supabase session restoration and demo mode;
 - profile pages (own and other authors) with author feeds;
 - notifications with optimistic mark-as-read;
 - moderation console with reports, suspend/ban/remove actions and role gates;

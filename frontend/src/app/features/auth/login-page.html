@@ -13,39 +13,214 @@
         Explorar em modo demonstração
       </button>
       <a class="auth__link" routerLink="/">Voltar para o feed</a>
-    } @else if (sent()) {
-      <p class="auth__sent" role="status">Link enviado. Confira seu e-mail.</p>
-      <p class="auth__copy">
-        Abra o link no mesmo navegador para entrar. Você pode fechar esta aba e voltar pelo e-mail.
-      </p>
-      <button type="button" class="auth__link" (click)="reset()">Usar outro e-mail</button>
     } @else {
-      <p class="auth__copy">Entre com o seu e-mail para receber um link de acesso. Sem senha.</p>
-
-      <form class="auth__form" [formGroup]="form" (ngSubmit)="submit()">
-        <label class="auth__label" for="auth-email">Seu e-mail</label>
-        <input
-          id="auth-email"
-          class="auth__input"
-          type="email"
-          formControlName="email"
-          autocomplete="email"
-          inputmode="email"
-          placeholder="voce@exemplo.com"
-        />
-
-        @if (form.controls.email.touched && form.controls.email.invalid) {
-          <p class="auth__error" role="alert">Informe um e-mail válido.</p>
-        }
-
-        @if (error(); as message) {
-          <p class="auth__error" role="alert">{{ message }}</p>
-        }
-
-        <button type="submit" class="auth__submit" [disabled]="sending()">
-          {{ sending() ? 'Enviando…' : 'Enviar link de acesso' }}
+      <div class="auth__tabs" role="tablist" aria-label="Formas de entrar">
+        <button
+          type="button"
+          role="tab"
+          class="auth__tab"
+          [class.auth__tab--active]="mode() !== 'register'"
+          [attr.aria-selected]="mode() !== 'register'"
+          (click)="setMode('password')"
+        >
+          Entrar
         </button>
-      </form>
+        <button
+          type="button"
+          role="tab"
+          class="auth__tab"
+          [class.auth__tab--active]="mode() === 'register'"
+          [attr.aria-selected]="mode() === 'register'"
+          (click)="setMode('register')"
+        >
+          Criar conta
+        </button>
+      </div>
+
+      @if (mode() === 'password') {
+        <p class="auth__copy">Entre com seu e-mail e senha.</p>
+
+        <form class="auth__form" [formGroup]="passwordForm" (ngSubmit)="submitPassword()">
+          <label class="auth__label" for="login-email">E-mail</label>
+          <input
+            id="login-email"
+            class="auth__input"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            inputmode="email"
+            placeholder="voce@exemplo.com"
+          />
+
+          @if (passwordForm.controls.email.touched && passwordForm.controls.email.invalid) {
+            <p class="auth__error" role="alert">Informe um e-mail válido.</p>
+          }
+
+          <label class="auth__label" for="login-password">Senha</label>
+          <input
+            id="login-password"
+            class="auth__input"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="Sua senha"
+          />
+
+          @if (passwordForm.controls.password.touched && passwordForm.controls.password.invalid) {
+            <p class="auth__error" role="alert">A senha deve ter entre 10 e 64 caracteres.</p>
+          }
+
+          @if (error(); as message) {
+            <p class="auth__error" role="alert">{{ message }}</p>
+          }
+
+          <button type="submit" class="auth__submit" [disabled]="submitting()">
+            {{ submitting() ? 'Entrando…' : 'Entrar' }}
+          </button>
+        </form>
+
+        <button type="button" class="auth__link" (click)="setMode('magic')">
+          Entrar com link por e-mail
+        </button>
+      }
+
+      @if (mode() === 'register') {
+        <p class="auth__copy">Crie sua conta para publicar reviews e participar da comunidade.</p>
+
+        <form class="auth__form" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+          <label class="auth__label" for="register-username">Nome de usuário</label>
+          <input
+            id="register-username"
+            class="auth__input"
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            placeholder="seu_nome"
+          />
+          <p class="auth__hint">De 3 a 50 caracteres.</p>
+
+          @if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
+            <p class="auth__error" role="alert">
+              Informe um nome de usuário com 3 a 50 caracteres.
+            </p>
+          }
+
+          <label class="auth__label" for="register-email">E-mail</label>
+          <input
+            id="register-email"
+            class="auth__input"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            inputmode="email"
+            placeholder="voce@exemplo.com"
+          />
+
+          @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+            <p class="auth__error" role="alert">Informe um e-mail válido.</p>
+          }
+
+          <label class="auth__label" for="register-password">Senha</label>
+          <input
+            id="register-password"
+            class="auth__input"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            placeholder="Crie uma senha"
+          />
+          <p class="auth__hint">Entre 10 e 64 caracteres.</p>
+
+          @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+            <p class="auth__error" role="alert">A senha deve ter entre 10 e 64 caracteres.</p>
+          }
+
+          @if (error(); as message) {
+            <p class="auth__error" role="alert">{{ message }}</p>
+          }
+
+          <button type="submit" class="auth__submit" [disabled]="submitting()">
+            {{ submitting() ? 'Criando conta…' : 'Criar conta' }}
+          </button>
+        </form>
+      }
+
+      @if (mode() === 'magic') {
+        @if (sent()) {
+          <p class="auth__sent" role="status">Link enviado. Confira seu e-mail.</p>
+          <p class="auth__copy">
+            Abra o link no mesmo navegador para entrar. Você pode fechar esta aba e voltar pelo
+            e-mail.
+          </p>
+          <button type="button" class="auth__link" (click)="resetMagicLink()">
+            Usar outro e-mail
+          </button>
+        } @else {
+          <p class="auth__copy">Receba um link de acesso no seu e-mail. Sem senha.</p>
+
+          <form class="auth__form" [formGroup]="magicForm" (ngSubmit)="submitMagicLink()">
+            <label class="auth__label" for="magic-email">Seu e-mail</label>
+            <input
+              id="magic-email"
+              class="auth__input"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="voce@exemplo.com"
+            />
+
+            @if (magicForm.controls.email.touched && magicForm.controls.email.invalid) {
+              <p class="auth__error" role="alert">Informe um e-mail válido.</p>
+            }
+
+            @if (error(); as message) {
+              <p class="auth__error" role="alert">{{ message }}</p>
+            }
+
+            <button type="submit" class="auth__submit" [disabled]="submitting()">
+              {{ submitting() ? 'Enviando…' : 'Enviar link de acesso' }}
+            </button>
+          </form>
+        }
+
+        <button type="button" class="auth__link" (click)="setMode('password')">
+          Voltar para o login
+        </button>
+      }
+
+      @if (auth.googleEnabled()) {
+        <div class="auth__divider" role="separator">
+          <span>ou</span>
+        </div>
+
+        <button
+          type="button"
+          class="auth__oauth"
+          [disabled]="submitting()"
+          (click)="signInWithGoogle()"
+        >
+          <svg class="auth__google-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <path
+              fill="#4285F4"
+              d="M17.64 9.2045c0-.6381-.0573-1.2518-.1636-1.8409H9v3.4818h4.8436c-.2086 1.125-.8427 2.0782-1.7963 2.7164v2.2581h2.9087c1.7018-1.5668 2.684-3.874 2.684-6.6154z"
+            />
+            <path
+              fill="#34A853"
+              d="M9 18c2.43 0 4.4673-.8064 5.9564-2.1805l-2.9087-2.2581c-.8064.54-1.8368.8591-3.0477.8591-2.3445 0-4.3286-1.5836-5.0373-3.7104H.9568v2.3318C2.4382 15.9832 5.4818 18 9 18z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M3.9627 10.7101c-.18-.54-.2827-1.1173-.2827-1.7101s.1027-1.1701.2827-1.7101V4.9582H.9568C.3477 6.1732 0 7.5473 0 9s.3477 2.8268.9568 4.0418l3.0059-2.3317z"
+            />
+            <path
+              fill="#EA4335"
+              d="M9 3.5795c1.3214 0 2.5077.4545 3.4405 1.3468l2.5813-2.5813C13.4636.8918 11.43 0 9 0 5.4818 0 2.4382 2.0168.9568 4.9582l3.0059 2.3318C4.6714 5.1631 6.6555 3.5795 9 3.5795z"
+            />
+          </svg>
+          Continuar com Google
+        </button>
+      }
 
       <a class="auth__link" routerLink="/">Voltar para o feed</a>
     }

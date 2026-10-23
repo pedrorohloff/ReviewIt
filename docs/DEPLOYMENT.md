@@ -99,6 +99,17 @@ Email/password accounts live outside Supabase Auth, so they use a separate
 once in **SQL Editor → New query**. It stores a BCrypt hash (salt included) and
 does not modify `auth.users`; magic-link and Google users keep working unchanged.
 
+### 1.5 Google OAuth (optional)
+
+Google sign-in is brokered by Supabase. The app only needs the Supabase URL and
+anon/publishable key; the Google **client secret** stays in the Supabase
+dashboard. The `/login` page hides the Google button until Supabase reports the
+provider as enabled.
+
+The complete walkthrough — Google Cloud consent screen, OAuth client, Supabase
+provider, redirect URLs and troubleshooting — is in
+[`GOOGLE_OAUTH.md`](./GOOGLE_OAUTH.md).
+
 ---
 
 ## 2. Backend on Render
@@ -217,7 +228,8 @@ After Vercel gives you a domain:
 
 1. Add it to `APP_CORS_ALLOWED_ORIGINS` on Render and redeploy the API.
 2. Add `https://<domain>/login` to the Supabase redirect URLs (section 1.3).
-3. Open the site and sign in with a magic link.
+3. Open `/login` and test all three methods: email/password, magic link and, if
+   configured, Google (section 1.5).
 
 ### Netlify alternative
 
@@ -269,7 +281,11 @@ in `src/environments/environment.development.ts` (gitignored) or in
 - [ ] Backend health check returns 200.
 - [ ] CORS preflight returns the frontend origin.
 - [ ] Vercel build succeeds and `config.json` contains the production values.
+- [ ] Email/password registration returns `201`, and login returns a usable token.
+- [ ] The stored local JWT is restored after a reload; **Sair** clears it.
 - [ ] Magic link returns to `/login` and the session is restored.
+- [ ] Google button appears only after the Supabase provider is enabled, and the
+  OAuth round trip returns to `/login`.
 - [ ] Feed loads real posts; like and comment persist.
 - [ ] Deep link (for example `/posts/<id>`) loads directly, not 404.
 - [ ] No `service_role` key, DB password or JWT secret in the frontend bundle.

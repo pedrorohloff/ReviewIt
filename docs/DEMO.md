@@ -36,7 +36,15 @@ eleven reviews.
 
 ## Real mode
 
-To exercise the real API and Supabase Auth, follow
+To exercise the real API and the login options, follow
 [`DEPLOYMENT.md`](./DEPLOYMENT.md). Locally, the fastest path is to set the
 Supabase URL/anon key in `frontend/src/environments/environment.development.ts`,
 run the backend with `.env.properties`, and open `/login`.
+
+`/login` offers:
+
+1. **E-mail e senha** — creates a local account in `app_credentials` and returns
+   an application JWT (Spring owns the BCrypt hash and token).
+2. **Link por e-mail** — the existing Supabase magic link.
+3. **Continuar com Google** — Supabase OAuth. It appears only after the Google
+   provider is enabled in Supabase; see [`GOOGLE_OAUTH.md`](./GOOGLE_OAUTH.md).

@@ -65,7 +65,9 @@ shared-secret tokens are not accepted for Supabase; use an asymmetric signing ke
 Email/password accounts are managed by the application itself. Passwords are
 hashed with BCrypt (the salt is part of the hash), and the backend issues its own
 HS256 JWT signed with `APP_JWT_SECRET`. `JwtFilter` accepts both these tokens and
-Supabase tokens, so magic-link and Google sessions keep working.
+Supabase tokens, so magic-link and Google sessions keep working. On the frontend,
+the local JWT is persisted in `localStorage`, restored on boot and attached only
+to API requests; public login/registration requests never carry it.
 
 ## Running the backend
 
@@ -97,6 +99,14 @@ Open `http://localhost:5173`. In demo mode the feed, profiles, likes, comments,
 notifications and moderation console use a deterministic local mock; no backend
 is required. With Supabase values configured, the app uses Supabase Auth and the
 API (the dev server proxies `/api` to `localhost:8080`).
+
+The `/login` page offers the available sign-in methods:
+
+- **E-mail and password** — handled by the Spring API; the issued JWT is stored
+  under `reviewit.auth.token` in `localStorage` and sent as a bearer token.
+- **Magic link** — handled by Supabase Auth; the existing link flow.
+- **Google** — Supabase OAuth. The button only appears when the Google provider
+  is enabled in Supabase; see [`docs/GOOGLE_OAUTH.md`](docs/GOOGLE_OAUTH.md).
 
 ```bash
 npm test              # Vitest unit tests
@@ -141,8 +151,10 @@ The recommended split is:
 - **Vercel** — Angular static build with SPA fallback (`frontend/vercel.json`)
 
 Step-by-step instructions, environment variables, CORS, Supabase redirect URLs
-and troubleshooting are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). A short
-walkthrough for demos is in [`docs/DEMO.md`](docs/DEMO.md).
+and troubleshooting are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). The Google
+OAuth client and Supabase provider walkthrough is in
+[`docs/GOOGLE_OAUTH.md`](docs/GOOGLE_OAUTH.md). A short walkthrough for demos is
+in [`docs/DEMO.md`](docs/DEMO.md).
 
 ## Database schema (Supabase)
 

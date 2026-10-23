@@ -56,6 +56,20 @@ Global advice maps exceptions to `ProblemDetail`:
 - Profile-gated: `@Profile("!test")` for production security; `@Profile("test")` for test security config (allows easier controller testing).
 - Endpoints under `/api/v1/**` require authentication by default.
 
+### Frontend auth flow
+
+- `/login` exposes email/password, account creation, magic link and, when the
+  provider is enabled, Google. The UI is in Brazilian Portuguese.
+- The Spring token is stored under `reviewit.auth.token` in `localStorage` and
+  restored before the app shell renders. Bootstrap catches failed session
+  restoration and times out after 5 seconds, so a blocked auth chunk leaves the
+  app signed out instead of blank.
+- `authInterceptor` adds the current token only to API requests and skips
+  `/auth/login` and `/auth/register`, so a stale token cannot break a new login.
+- Supabase owns magic-link and Google sessions. The Google button is gated by
+  Supabase's public `/auth/v1/settings` response (`external.google`), which
+  avoids sending users to a raw provider-not-enabled page.
+
 ## Pagination
 
 Domains use Spring Data `Pageable` with `page` (0-based) and `pageSize` query params; responses wrapped in `*PageDTO`.
