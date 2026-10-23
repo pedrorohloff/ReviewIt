@@ -94,6 +94,7 @@ sg docker -c './mvnw test'  # if not in docker group
 
 - **Docker not available**: integration tests fail with Testcontainers errors — start Docker daemon
 - **Port conflicts**: app defaults to 8080; change via `server.port` if needed
-- **JWT validation fails**: check `SUPABASE_JWT_JWKS_URL` and `SUPABASE_JWT_ISSUER` in `.env.properties`
+- **JWT validation fails**: check `SUPABASE_JWT_JWKS_URL` and `SUPABASE_JWT_ISSUER` in `.env.properties` for magic-link/Google sessions, and `APP_JWT_SECRET` for email/password sessions
+- **App fails to start with `app.jwt.secret`**: set `APP_JWT_SECRET` to a random value of at least 32 bytes
 - **DB connection fails**: verify Supabase credentials/URL and network access
 - **Permission issues running with sg docker**: ensure docker group exists and your user is in it

@@ -40,8 +40,14 @@ public class JwtFilter extends OncePerRequestFilter {
     private static final long JWKS_TTL_MS = 5 * 60 * 1000L;
     private static final long JWKS_FORCE_REFRESH_INTERVAL_MS = 30 * 1000L;
 
+    private final AppJwtService appJwtService;
+
     private volatile JWKSet cachedJwks;
     private volatile long cachedAt;
+
+    public JwtFilter(AppJwtService appJwtService) {
+        this.appJwtService = appJwtService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -76,6 +82,18 @@ public class JwtFilter extends OncePerRequestFilter {
     private UUID validateToken(String token) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(token);
 
+        // The issuer is read before verification only to choose the verifier.
+        // The selected verifier always validates the signature before the
+        // subject is trusted.
+        String tokenIssuer = signedJWT.getJWTClaimsSet().getIssuer();
+        if (appJwtService.ownsIssuer(tokenIssuer)) {
+            return appJwtService.validate(signedJWT);
+        }
+
+        return validateSupabaseToken(signedJWT);
+    }
+
+    private UUID validateSupabaseToken(SignedJWT signedJWT) throws Exception {
         String keyId = signedJWT.getHeader().getKeyID();
         JWK jwk = jwks().getKeyByKeyId(keyId);
         if (jwk == null

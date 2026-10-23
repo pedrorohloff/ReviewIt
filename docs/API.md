@@ -6,12 +6,33 @@ This document summarizes the REST API surface. For the interactive UI, run the a
 
 ## Authentication
 
-All endpoints require a valid Supabase JWT, except `GET /api/v1/health`, Swagger UI and the OpenAPI JSON. Send `Authorization: Bearer <token>`. The JWT `sub` (user ID) is extracted by `JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
+Most endpoints require a bearer token, except `GET /api/v1/health`, the
+email/password endpoints below, Swagger UI and the OpenAPI JSON. Send
+`Authorization: Bearer <token>`. The JWT `sub` (user ID) is extracted by
+`JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
 
-The backend accepts RSA and ECDSA Supabase signing keys, caches the JWKS for five
-minutes and refreshes it (at most once every 30 seconds) when an unknown `kid` is presented. Legacy HS256 shared
-secrets are not accepted; use an asymmetric signing key and the public
-`.well-known/jwks.json` endpoint.
+The backend accepts two token types:
+
+- **Supabase tokens** from magic-link and Google sign-in. These are verified with
+  the RSA/ECDSA keys from the public JWKS endpoint, cached for five minutes and
+  refreshed (at most once every 30 seconds) when an unknown `kid` appears.
+- **Application tokens** from email/password login. These are HS256 JWTs signed
+  with `APP_JWT_SECRET`, issued by `POST /api/v1/auth/login` or
+  `POST /api/v1/auth/register`, and valid for 24 hours by default.
+
+Passwords are hashed with BCrypt on the backend; the salt is embedded in the
+stored hash. No password or hash is ever returned by the API.
+
+### Email/password endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/auth/register` | Create a profile and local credential; returns `201` with a token |
+| POST | `/auth/login` | Authenticate with email and password; returns `200` with a token |
+
+`register` body: `{"username":"reader","email":"reader@example.com","password":"..."}`.
+`login` body: `{"email":"reader@example.com","password":"..."}`. Both return
+`accessToken`, `tokenType`, `expiresAt`, `email` and the public `profile`.
 
 ## CORS
 
@@ -29,8 +50,9 @@ token.
 
 Errors follow RFC 7807 (`ProblemDetail`):
 - `404 Not Found` — `RecordNotFoundException`
-- `403 Forbidden` — `ForbiddenException`
-- `409 Conflict` — `BusinessException`
+- `403 Forbidden` — `ForbiddenException` (for example an inactive account or another user's profile)
+- `401 Unauthorized` — invalid email/password or invalid/expired bearer token
+- `409 Conflict` — `BusinessException` (for example a duplicate email or username)
 - `400 Bad Request` — Validation errors (`MethodArgumentNotValidException`) with `FieldValidationError` list
 
 ## Endpoints

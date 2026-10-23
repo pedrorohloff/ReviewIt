@@ -16,6 +16,14 @@ services:
         sync: false
       - key: SUPABASE_JWT_ISSUER
         sync: false
+      - key: APP_JWT_SECRET
+        generateValue: true
+      - key: APP_JWT_ISSUER
+        value: reviewit-api
+      - key: APP_JWT_TTL_SECONDS
+        value: "86400"
+      - key: APP_BCRYPT_STRENGTH
+        value: "12"
       - key: APP_CORS_ALLOWED_ORIGINS
         sync: false
       - key: SPRING_JPA_SHOW_SQL

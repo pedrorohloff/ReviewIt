@@ -7,4 +7,6 @@ import java.util.UUID;
 
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, UUID> {
+
+    boolean existsByUsernameIgnoreCase(String username);
 }

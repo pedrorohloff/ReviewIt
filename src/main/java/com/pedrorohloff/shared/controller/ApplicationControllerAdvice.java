@@ -3,6 +3,7 @@ package com.pedrorohloff.shared.controller;
 import com.pedrorohloff.exception.BusinessException;
 import com.pedrorohloff.exception.ForbiddenException;
 import com.pedrorohloff.exception.RecordNotFoundException;
+import com.pedrorohloff.exception.UnauthorizedException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,11 @@ public class ApplicationControllerAdvice {
     @ExceptionHandler(BusinessException.class)
     public ProblemDetail handleBusinessException(BusinessException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ProblemDetail handleUnauthorizedException(UnauthorizedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 
     @ExceptionHandler(ForbiddenException.class)

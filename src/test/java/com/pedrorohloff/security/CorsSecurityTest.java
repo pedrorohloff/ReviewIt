@@ -15,11 +15,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = HealthController.class)
-@Import({SecurityConfig.class, CorsConfig.class, JwtFilter.class})
+@Import({SecurityConfig.class, CorsConfig.class, JwtFilter.class, AppJwtService.class})
 @TestPropertySource(properties = {
         "app.cors.allowed-origins=https://app.example.com",
         "supabase.jwt.jwks-url=https://example.invalid/keys",
-        "supabase.jwt.issuer=https://example.invalid/auth/v1"
+        "supabase.jwt.issuer=https://example.invalid/auth/v1",
+        "app.jwt.secret=test-only-app-jwt-secret-with-at-least-32-bytes",
+        "app.jwt.issuer=reviewit-api"
 })
 class CorsSecurityTest {
 

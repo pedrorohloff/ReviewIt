@@ -31,8 +31,9 @@ Base package: `com.pedrorohloff`
 - `shared/model/BaseEntity.java` — base entity with common fields
 - `shared/controller/ApplicationControllerAdvice.java` — global exception handling returning RFC 7807 `ProblemDetail` (404/403/409 + validation)
 - `exception/BusinessException.java`, `ForbiddenException.java`, `RecordNotFoundException.java`
-- `security/JwtFilter.java` — validates Supabase JWT via JWKS, sets `currentUserId` as request attribute
-- `security/SecurityConfig.java` — Spring Security config; test profile uses `TestSecurityConfig`
+- `security/JwtFilter.java` — validates either a Supabase JWT via JWKS or an application HS256 JWT, then sets `currentUserId` as a request attribute
+- `security/AppJwtService.java` — issues/validates 24-hour email/password tokens
+- `security/SecurityConfig.java` — Spring Security config; only register/login are public; test profile uses `TestSecurityConfig`
 
 ## Error Handling (RFC 7807)
 
@@ -45,12 +46,13 @@ Global advice maps exceptions to `ProblemDetail`:
 ## Database
 
 - **Production/Dev**: PostgreSQL (Supabase). Config via `.env.properties` → `application.properties`
-- **Migrations (Flyway)**: `V1__create_like_tables.sql`, `V2__create_moderation_tables.sql`, `V3__create_notification_tables.sql`
+- **Migrations (reference DDL)**: `V1`–`V3` create likes/moderation/notifications, `V4` provisions Supabase profiles, `V5` creates `app_credentials` for email/password accounts
 - **Tests**: Testcontainers PostgreSQL 16, `ddl-auto=create-drop` in test profile
 
 ## Security
 
-- JWT-based auth (Supabase). `JwtFilter` validates token signature/issuer, extracts `sub` as UUID `currentUserId`.
+- JWT-based auth with two accepted issuers. Supabase tokens cover magic-link/Google; application HS256 tokens cover email/password. `JwtFilter` validates the signature/issuer and extracts `sub` as UUID `currentUserId`.
+- Email/password credentials live in `app_credentials`, keyed by `profile_id`; BCrypt hashes include the salt. Spring issues the local token after a successful login.
 - Profile-gated: `@Profile("!test")` for production security; `@Profile("test")` for test security config (allows easier controller testing).
 - Endpoints under `/api/v1/**` require authentication by default.
 
@@ -63,4 +65,4 @@ Domains use Spring Data `Pageable` with `page` (0-based) and `pageSize` query pa
 - **Base**: `AbstractIntegrationTest` with `@ActiveProfiles("test")`, `@Transactional`, `@DirtiesContext(classMode = AFTER_CLASS)`
 - **Service tests** and **Controller tests** per domain
 - **Data factory**: `TestDataFactory` for consistent test data
-- **Full suite**: 133 tests, all passing (run with Docker via Testcontainers)
+- **Full suite**: 199 tests, all passing (run with Docker via Testcontainers)

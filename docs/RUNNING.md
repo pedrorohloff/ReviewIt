@@ -38,6 +38,13 @@ SUPABASE_DB_PASSWORD=<your-database-password>
 SUPABASE_JWT_JWKS_URL=https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
 SUPABASE_JWT_ISSUER=https://<project-ref>.supabase.co/auth/v1
 
+# Application email/password JWTs. Generate a fresh secret with:
+#   openssl rand -base64 48
+APP_JWT_SECRET=<random-secret-at-least-32-bytes>
+APP_JWT_ISSUER=reviewit-api
+APP_JWT_TTL_SECONDS=86400
+APP_BCRYPT_STRENGTH=12
+
 # CORS (frontend origin)
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
@@ -106,6 +113,10 @@ requirement**.
 | Like | `LikeServiceTest` | `LikeControllerTest` |
 | Moderation | `ReportServiceTest` | `ModerationControllerTest` |
 | Notification | `NotificationServiceTest` | `NotificationControllerTest` |
+| Auth | `AuthAccountServiceTest` | `AuthControllerTest` |
+
+`AppJwtServiceTest`, `JwtFilterTest`, `JwtFilterAuthenticationTest` and `AuthSecurityTest`
+cover token validation and the public auth routes.
 
 Shared helpers:
 - `src/test/java/com/pedrorohloff/AbstractIntegrationTest.java` — Testcontainers base class.
@@ -123,6 +134,7 @@ The repository ships Flyway-style migrations for only **part** of the schema, an
 - `V3__create_notification_tables.sql` → `notifications`
 - `V4__provision_profiles_on_signup.sql` → `profiles.onboarded`, the `auth.users` trigger and
   a backfill for existing users
+- `V5__create_app_credentials.sql` → `app_credentials` for application email/password accounts
 
 There is **no migration that creates `profiles`, `posts`, or `comments`** — run the schema
 block below first. `V4` then adds automatic profile provisioning on top of it.
@@ -243,6 +255,15 @@ in the same SQL Editor. It:
 The frontend sends first-time users to `/onboarding` when `onboarded` is false. Saving the
 form calls `PUT /profiles/{id}` and marks the profile complete. The trigger is the normal
 path; `POST /profiles` remains as a fallback for projects where the trigger was not installed.
+
+### Local email/password credentials (required for local login)
+
+Run
+[`V5__create_app_credentials.sql`](../src/main/resources/db/migration/V5__create_app_credentials.sql)
+once in the SQL Editor. It creates `app_credentials`, keyed by `profile_id`, and a foreign
+key to `profiles`. The table stores a BCrypt hash whose salt is embedded in the string; there
+is no separate salt column. Supabase Auth users do not need a row here, so magic-link and
+Google sessions are unaffected.
 
 ### Option B — `psql` from the terminal
 

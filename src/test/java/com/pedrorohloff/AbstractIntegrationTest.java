@@ -38,5 +38,13 @@ public abstract class AbstractIntegrationTest {
         // the context starts without a local .env.properties file.
         registry.add("supabase.jwt.jwks-url", () -> "https://example.invalid/jwks");
         registry.add("supabase.jwt.issuer", () -> "https://example.invalid/auth/v1");
+
+        // Local auth needs its own signing secret and a cheap BCrypt cost in
+        // tests. BCrypt 12 is intentionally slow for production.
+        registry.add("app.jwt.secret",
+                () -> "test-only-app-jwt-secret-with-at-least-32-bytes");
+        registry.add("app.jwt.issuer", () -> "reviewit-api");
+        registry.add("app.jwt.ttl-seconds", () -> "86400");
+        registry.add("app.auth.bcrypt-strength", () -> "4");
     }
 }
