@@ -9,6 +9,11 @@ import { Profile, Role } from '@app/core/models/profile';
 import { AuthUser } from './auth-user';
 import { DEMO_USER } from './demo-user';
 
+type SupabaseModule = typeof import('@supabase/supabase-js');
+
+/** Keeps bootstrap from waiting forever on a slow or blocked auth chunk. */
+const AUTH_RESTORE_TIMEOUT_MS = 5_000;
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly config = inject(APP_CONFIG);
@@ -39,20 +44,25 @@ export class AuthService {
       return;
     }
 
-    const client = await this.supabase();
-    if (!client) {
+    try {
+      const client = await withTimeout(this.supabase(), AUTH_RESTORE_TIMEOUT_MS);
+      if (!client) {
+        return;
+      }
+
+      const { data } = await withTimeout(client.auth.getSession(), AUTH_RESTORE_TIMEOUT_MS);
+      await this.applySession(data.session);
+
+      client.auth.onAuthStateChange((_event, session) => {
+        void this.applySession(session);
+      });
+    } catch (error) {
+      // A failed auth chunk must not block the whole app from booting. The
+      // user can still log in later; the page renders in a signed-out state.
+      console.warn('Não foi possível restaurar a sessão anterior.', error);
+    } finally {
       this._isReady.set(true);
-      return;
     }
-
-    const { data } = await client.auth.getSession();
-    await this.applySession(data.session);
-
-    client.auth.onAuthStateChange((_event, session) => {
-      void this.applySession(session);
-    });
-
-    this._isReady.set(true);
   }
 
   /** Restores the fixed local demo identity when the page requests it. */
@@ -143,18 +153,28 @@ export class AuthService {
       return null;
     }
 
-    this.clientPromise ??= import('@supabase/supabase-js').then(({ createClient }) =>
-      createClient(this.config.supabaseUrl, this.config.supabaseAnonKey, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-        },
-      }),
-    );
+    this.clientPromise ??= this.loadSupabaseModule()
+      .then(({ createClient }) =>
+        createClient(this.config.supabaseUrl, this.config.supabaseAnonKey, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+          },
+        }),
+      )
+      .catch((error: unknown) => {
+        // Allow a later login attempt to retry the dynamic import.
+        this.clientPromise = null;
+        throw error;
+      });
 
     this.client = await this.clientPromise;
     return this.client;
+  }
+
+  protected loadSupabaseModule(): Promise<SupabaseModule> {
+    return import('@supabase/supabase-js');
   }
 
   private async applySession(session: Session | null): Promise<void> {
@@ -195,6 +215,25 @@ export class AuthService {
       return null;
     }
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`A autenticação demorou mais de ${timeoutMs} ms para responder.`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
 }
 
 function userFromSession(user: User): AuthUser {

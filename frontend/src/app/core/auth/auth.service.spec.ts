@@ -14,6 +14,14 @@ const demoConfig: AppConfig = {
   pageSize: 12,
 };
 
+const supabaseConfig: AppConfig = {
+  ...demoConfig,
+  useMock: false,
+  supabaseUrl: 'https://example.supabase.co',
+  supabaseAnonKey: 'publishable-key',
+  hasSupabase: true,
+};
+
 describe('AuthService (demo mode)', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -63,5 +71,37 @@ describe('AuthService (demo mode)', () => {
     expect(auth.user()?.avatarUrl).toBe('https://example.com/maria.png');
     expect(auth.user()?.needsProfile).toBe(false);
     expect(auth.user()?.needsOnboarding).toBe(false);
+  });
+});
+
+describe('AuthService (Supabase unavailable)', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: APP_CONFIG, useValue: supabaseConfig },
+      ],
+    });
+  });
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('still becomes ready, signed out, when the auth chunk fails to load', async () => {
+    const auth = TestBed.inject(AuthService);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    vi.spyOn(
+      auth as unknown as { loadSupabaseModule: () => Promise<unknown> },
+      'loadSupabaseModule',
+    ).mockRejectedValue(new Error('chunk failed'));
+
+    await auth.restoreSession();
+
+    expect(auth.isReady()).toBe(true);
+    expect(auth.isAuthenticated()).toBe(false);
+    expect(warn).toHaveBeenCalled();
+
+    warn.mockRestore();
   });
 });
