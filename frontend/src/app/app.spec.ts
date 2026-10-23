@@ -37,6 +37,25 @@ describe('App', () => {
     expect(element.querySelector('app-feed-header h1')?.textContent).toContain('Reviews');
   });
 
+  it('places the filter beside the sort and the new-review action by the title', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    await TestBed.inject(Router).navigateByUrl('/');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const header = element.querySelector('app-feed-header');
+
+    expect(header?.querySelector('.feed-head__title-row .feed-head__new')).toBeTruthy();
+    expect(
+      header?.querySelector('.feed-head__actions .feed-head__filter .filter-button'),
+    ).toBeTruthy();
+    expect(header?.querySelector('.feed-head__filter + .sort')).toBeTruthy();
+    expect(element.querySelector('app-top-bar .filter-button')).toBeNull();
+  });
+
   it('shows a brand link back to the feed', async () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();

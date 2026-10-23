@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { ContentType, FeedFilters, Genre } from '@app/core/models/post';
 import { FeedStore } from '@app/features/feed/feed-store';
 import { CONTENT_TYPE_LABELS, GENRE_LABELS } from '@app/shared/utils/format';
@@ -38,6 +45,7 @@ const GENRE_OPTIONS: readonly FilterOption<GenreFilter>[] = [
 export class FilterPopover {
   private readonly store = inject(FeedStore);
 
+  readonly align = input<'start' | 'end'>('start');
   readonly closed = output<void>();
 
   protected readonly typeOptions = TYPE_OPTIONS;

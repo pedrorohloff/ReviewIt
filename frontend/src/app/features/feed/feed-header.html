@@ -1,15 +1,47 @@
 <header class="feed-head">
-  <div>
+  <div class="feed-head__title">
     <p class="feed-head__eyebrow">Comunidade</p>
-    <h1 id="feed-title">Reviews</h1>
+    <div class="feed-head__title-row">
+      <h1 id="feed-title">Reviews</h1>
+      <a class="feed-head__new" routerLink="/new">
+        <app-icon name="plus" [size]="16" />
+        Nova review
+      </a>
+    </div>
     <p class="feed-head__count" aria-live="polite">{{ countLabel() }}</p>
   </div>
 
   <div class="feed-head__actions">
-    <a class="feed-head__new" routerLink="/new">
-      <app-icon name="plus" [size]="16" />
-      Nova review
-    </a>
+    <div class="feed-head__filter">
+      <button
+        #filterButton
+        type="button"
+        class="filter-button"
+        [class.is-active]="filterOpen() || activeCount() > 0"
+        [attr.aria-expanded]="filterOpen()"
+        aria-haspopup="dialog"
+        aria-controls="filter-panel"
+        [attr.aria-label]="activeCount() > 0 ? 'Filtro, ' + activeFilterLabel() : 'Filtro'"
+        (click)="toggleFilters()"
+      >
+        <app-icon name="sliders" [size]="16" />
+        <span class="filter-button__label">filtro</span>
+        @if (activeCount() > 0) {
+          <span class="filter-button__badge" aria-hidden="true">{{ activeCount() }}</span>
+        }
+      </button>
+
+      @if (filterOpen()) {
+        <button
+          type="button"
+          class="filter-backdrop"
+          aria-label="Fechar filtros"
+          tabindex="-1"
+          (click)="closeFilters()"
+        ></button>
+        <app-filter-popover align="end" (closed)="closeFilters()" />
+      }
+    </div>
 
     <div class="sort" role="group" aria-label="Ordenar reviews">
       <button

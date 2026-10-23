@@ -6,6 +6,10 @@
   padding-bottom: 1.125rem;
 }
 
+.feed-head__title {
+  min-width: 0;
+}
+
 .feed-head__eyebrow {
   margin: 0 0 0.25rem;
   color: var(--color-muted);
@@ -13,6 +17,13 @@
   font-weight: 650;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.feed-head__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.875rem;
 }
 
 .feed-head h1 {
@@ -34,7 +45,14 @@
 .feed-head__actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.625rem;
+}
+
+.feed-head__filter {
+  position: relative;
+  flex: 0 0 auto;
 }
 
 .feed-head__new {
@@ -58,6 +76,58 @@
 .feed-head__new:hover {
   border-color: var(--color-ink-strong);
   background: var(--color-ink-strong);
+}
+
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 8.25rem;
+  height: 2.75rem;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 0.84375rem;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.filter-button:hover {
+  background: var(--color-surface-muted);
+}
+
+.filter-button.is-active {
+  border-color: var(--color-ink);
+  background: var(--color-border);
+  color: var(--color-ink-strong);
+}
+
+.filter-button__badge {
+  display: grid;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.3125rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.filter-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  cursor: default;
+  background: transparent;
 }
 
 .sort {
@@ -104,7 +174,26 @@
 
   .feed-head__actions {
     width: 100%;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+  }
+
+  .filter-button {
+    width: 2.75rem;
+    padding: 0;
+  }
+
+  .filter-button__label {
+    display: none;
+  }
+
+  .filter-button__badge {
+    position: absolute;
+    top: -0.3125rem;
+    right: -0.3125rem;
+  }
+
+  .filter-backdrop {
+    background: var(--backdrop);
   }
 
   .sort {

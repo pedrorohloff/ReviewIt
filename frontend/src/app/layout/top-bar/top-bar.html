@@ -1,44 +1,8 @@
 <header class="topbar" aria-label="Barra de navegação">
   <div class="topbar__left">
-    <a
-      class="topbar__brand"
-      routerLink="/"
-      aria-label="ReviewIt, ir para a página inicial"
-      (click)="goHome()"
-    >
+    <a class="topbar__brand" routerLink="/" aria-label="ReviewIt, ir para a página inicial">
       ReviewIt
     </a>
-
-    <div class="topbar__filter">
-      <button
-        #filterButton
-        type="button"
-        class="filter-button"
-        [class.is-active]="filterOpen() || activeCount() > 0"
-        [attr.aria-expanded]="filterOpen()"
-        aria-haspopup="dialog"
-        aria-controls="filter-panel"
-        [attr.aria-label]="activeCount() > 0 ? 'Filtro, ' + activeFilterLabel() : 'Filtro'"
-        (click)="toggleFilters()"
-      >
-        <app-icon name="sliders" [size]="16" />
-        <span class="filter-button__label">filtro</span>
-        @if (activeCount() > 0) {
-          <span class="filter-button__badge" aria-hidden="true">{{ activeCount() }}</span>
-        }
-      </button>
-
-      @if (filterOpen()) {
-        <button
-          type="button"
-          class="filter-backdrop"
-          aria-label="Fechar filtros"
-          tabindex="-1"
-          (click)="closeFilters()"
-        ></button>
-        <app-filter-popover (closed)="closeFilters()" />
-      }
-    </div>
   </div>
 
   <app-search-field />

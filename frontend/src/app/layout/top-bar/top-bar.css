@@ -40,11 +40,6 @@
   outline-offset: 0.25rem;
 }
 
-.topbar__filter {
-  position: relative;
-  min-width: 0;
-}
-
 .topbar__avatar {
   display: flex;
   align-items: center;
@@ -68,79 +63,10 @@
   white-space: nowrap;
 }
 
-.filter-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 8.25rem;
-  height: 2.75rem;
-  border: 1.5px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--color-ink);
-  font-size: 0.84375rem;
-  font-weight: 500;
-  line-height: 1;
-  transition:
-    background-color 120ms ease-out,
-    border-color 120ms ease-out,
-    color 120ms ease-out;
-}
-
-.filter-button:hover {
-  background: var(--color-surface-muted);
-}
-
-.filter-button.is-active {
-  border-color: var(--color-ink);
-  background: var(--color-border);
-  color: var(--color-ink-strong);
-}
-
-.filter-button__badge {
-  display: grid;
-  min-width: 1.125rem;
-  height: 1.125rem;
-  padding: 0 0.3125rem;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--color-ink);
-  color: var(--color-surface);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.filter-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  cursor: default;
-  background: transparent;
-}
-
 /* The badge + avatar needs ~13rem; only show it once the side column fits. */
 @media (max-width: 1099px) {
   .demo-badge {
     display: none;
-  }
-}
-
-@media (max-width: 1199px) {
-  .filter-button {
-    width: 3rem;
-    padding: 0;
-  }
-
-  .filter-button__label {
-    display: none;
-  }
-
-  .filter-button__badge {
-    position: absolute;
-    top: -0.3125rem;
-    right: -0.3125rem;
   }
 }
 
@@ -181,13 +107,5 @@
 
   .topbar__avatar {
     grid-area: avatar;
-  }
-
-  .filter-button {
-    width: 2.75rem;
-  }
-
-  .filter-backdrop {
-    background: var(--backdrop);
   }
 }

@@ -18,6 +18,11 @@
   box-shadow: var(--shadow-popover);
 }
 
+.filter-popover--end {
+  right: 0;
+  left: auto;
+}
+
 .filter-popover__head {
   display: flex;
   align-items: flex-start;
