@@ -222,12 +222,21 @@
 }
 
 .auth__link {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   color: var(--color-muted);
   font-size: 0.8125rem;
   text-decoration: underline;
   text-underline-offset: 0.1875rem;
   cursor: pointer;
+}
+
+.auth__link + .auth__link {
+  margin-top: 0.5rem;
+}
+
+.auth__submit + .auth__link {
+  margin-top: 0.75rem;
 }
 
 .auth__link:hover {
