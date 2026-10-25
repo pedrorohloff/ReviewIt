@@ -74,6 +74,7 @@
   color: var(--color-surface);
   font-size: 0.78125rem;
   font-weight: 650;
+  cursor: pointer;
   transition:
     background-color 120ms ease-out,
     border-color 120ms ease-out,

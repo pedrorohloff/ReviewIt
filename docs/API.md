@@ -6,10 +6,20 @@ This document summarizes the REST API surface. For the interactive UI, run the a
 
 ## Authentication
 
-Most endpoints require a bearer token, except `GET /api/v1/health`, the
-email/password endpoints below, Swagger UI and the OpenAPI JSON. Send
-`Authorization: Bearer <token>`. The JWT `sub` (user ID) is extracted by
-`JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
+Public endpoints, no token required:
+
+- `GET /api/v1/health`;
+- `POST /api/v1/auth/register` and `POST /api/v1/auth/login`;
+- read-only `GET` for the feed and public content: `/api/v1/posts`,
+  `/api/v1/posts/**`, `/api/v1/comments/**`, `/api/v1/profiles` and
+  `/api/v1/profiles/**`;
+- Swagger UI and the OpenAPI JSON.
+
+Everything else — writes, notifications, moderation and reports — requires a
+bearer token. Send `Authorization: Bearer <token>`. The JWT `sub` (user ID) is
+extracted by `JwtFilter` and exposed as `@RequestAttribute("currentUserId")`.
+On public reads the attribute is `null` when no token is sent; when a valid token
+is present, it is filled and fields such as `likedByMe` reflect that user.
 
 The backend accepts two token types:
 
@@ -65,8 +75,8 @@ Errors follow RFC 7807 (`ProblemDetail`):
 ### Profiles
 | Method | Path | Description |
 |---|---|---|
-| GET | `/profiles?page={page}&pageSize={pageSize}` | List profiles (paginated) |
-| GET | `/profiles/{id}` | Get profile by id |
+| GET | `/profiles?page={page}&pageSize={pageSize}` | List profiles (paginated, public) |
+| GET | `/profiles/{id}` | Get profile by id (public) |
 | POST | `/profiles` | Create the caller's profile; id comes from the JWT `sub` |
 | PUT | `/profiles/{id}` | Update own profile and mark it onboarded |
 | DELETE | `/profiles/{id}` | Delete own profile |
@@ -80,8 +90,8 @@ profile already exists. `ProfileDTO` includes `onboarded`.
 ### Posts
 | Method | Path | Description |
 |---|---|---|
-| GET | `/posts?page={page}&pageSize={pageSize}` | List posts (paginated); accepts optional query params below |
-| GET | `/posts/{id}` | Get post by id |
+| GET | `/posts?page={page}&pageSize={pageSize}` | List posts (paginated, public); accepts optional query params below |
+| GET | `/posts/{id}` | Get post by id (public) |
 | POST | `/posts` | Create post |
 | PUT | `/posts/{id}` | Update post |
 | DELETE | `/posts/{id}` | Delete post |
@@ -104,8 +114,8 @@ Every `PostDTO` returned by these endpoints now carries real `likeCount`/`commen
 ### Comments
 | Method | Path | Description |
 |---|---|---|
-| GET | `/posts/{postId}/comments?page={page}&pageSize={pageSize}` | List comments for post (paginated) |
-| GET | `/comments/{id}` | Get comment by id |
+| GET | `/posts/{postId}/comments?page={page}&pageSize={pageSize}` | List comments for post (paginated, public) |
+| GET | `/comments/{id}` | Get comment by id (public) |
 | POST | `/posts/{postId}/comments` | Create comment on post |
 | PUT | `/comments/{id}` | Update comment |
 | DELETE | `/comments/{id}` | Delete comment |
@@ -150,6 +160,9 @@ JWT `sub`; `false` for anonymous requests). `GET /posts/{id}` exposes the same r
 Validation errors include field details via `FieldValidationError`.
 
 ## Notes
+- `GET` endpoints for posts, comments and profiles are public; writes and private
+  resources require a bearer token.
 - All `currentUserId` values come from the authenticated user's JWT `sub` claim.
+  On public reads it is absent, so `likedByMe` is `false`.
 - Pagination uses `page` (0-based) and `pageSize` query params.
 - Like endpoints are idempotent toggles (like/unlike).

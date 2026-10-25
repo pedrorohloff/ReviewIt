@@ -174,7 +174,11 @@ With the app running:
 - Health probe: <http://localhost:8080/api/v1/health>
 
 `/api/v1/health`, Swagger UI, the OpenAPI document, `POST /api/v1/auth/register`
-and `POST /api/v1/auth/login` are public. Every other endpoint requires
+and `POST /api/v1/auth/login` are public. Read-only requests are public too:
+`GET /api/v1/posts`, `/api/v1/posts/**`, `/api/v1/comments/**`,
+`/api/v1/profiles` and `/api/v1/profiles/**` work without a token, so anyone can
+browse the feed, open a review, read its comments and see a public profile.
+Writes, notifications, moderation and reports require
 `Authorization: Bearer <token>`; the backend accepts both Supabase tokens
 (magic link/Google) and its own email/password tokens. Errors follow RFC 7807
 (`ProblemDetail`). See [`docs/API.md`](docs/API.md) for the full endpoint list.
@@ -202,15 +206,16 @@ Base path: `/api/v1`
 |---|---|
 | Health | `GET /health` (public) |
 | Auth | `POST /auth/register`, `POST /auth/login` (public) |
-| Profile | `GET/POST/PUT/DELETE /profiles`, pagination with `page`, `pageSize` |
-| Post | `GET/POST/PUT/DELETE /posts`, `PATCH /posts/{id}/notification-settings`, pagination |
-| Comment | `GET /posts/{postId}/comments`, `GET/POST/PUT/DELETE /comments` |
+| Profile | `GET /profiles`, `GET /profiles/{id}` (public reads); `POST/PUT/DELETE` require auth; pagination with `page`, `pageSize` |
+| Post | `GET /posts`, `GET /posts/{id}` (public reads); `POST/PUT/DELETE`, `PATCH /posts/{id}/notification-settings` require auth; pagination |
+| Comment | `GET /posts/{postId}/comments`, `GET /comments/{id}` (public reads); `POST/PUT/DELETE` require auth |
 | Like | `POST /posts/{postId}/like`, `POST /comments/{commentId}/like` (toggle) |
 | Moderation/Reports | `POST /reports`, `GET /reports?page=0&pageSize=10`, `POST /reports/{reportId}/action` |
 | Notification | `GET /notifications?page=0&pageSize=10`, `PATCH /notifications/{id}/read` |
 
-Authenticated endpoints expect the current user in the JWT `sub` claim, exposed
-as `@RequestAttribute("currentUserId")`.
+Public reads work without a token and return `likedByMe = false`. Authenticated
+endpoints expect the current user in the JWT `sub` claim, exposed as
+`@RequestAttribute("currentUserId")`.
 
 ## Known limitations
 

@@ -2,6 +2,8 @@ package com.pedrorohloff.security;
 
 import com.pedrorohloff.auth.AuthAccountService;
 import com.pedrorohloff.auth.AuthController;
+import com.pedrorohloff.post.PostController;
+import com.pedrorohloff.post.PostService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -15,7 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = AuthController.class)
+@WebMvcTest(controllers = {AuthController.class, PostController.class})
 @Import({SecurityConfig.class, CorsConfig.class, JwtFilter.class, AppJwtService.class})
 @TestPropertySource(properties = {
         "app.cors.allowed-origins=https://app.example.com",
@@ -31,6 +33,9 @@ class AuthSecurityTest {
 
     @MockitoBean
     private AuthAccountService authAccountService;
+
+    @MockitoBean
+    private PostService postService;
 
     @Test
     void registerIsPublic() throws Exception {
@@ -53,8 +58,16 @@ class AuthSecurityTest {
     }
 
     @Test
-    void otherEndpointsStillRequireAuthentication() throws Exception {
+    void feedIsPublic() throws Exception {
         mockMvc.perform(get("/api/v1/posts"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void writesStillRequireAuthentication() throws Exception {
+        mockMvc.perform(post("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
                 .andExpect(status().isForbidden());
     }
 }

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toApiError } from '@app/core/api/api-error';
 import { AuthService } from '@app/core/auth/auth.service';
+import { LoginPromptService } from '@app/core/auth/login-prompt.service';
 import { Avatar } from '@app/shared/ui/avatar/avatar';
 import { CommentStore } from './comment-store';
 
@@ -20,6 +21,7 @@ const MAX_LENGTH = 2000;
 export class CommentComposer {
   private readonly store = inject(CommentStore);
   private readonly auth = inject(AuthService);
+  private readonly loginPrompt = inject(LoginPromptService);
 
   protected readonly maxLength = MAX_LENGTH;
   protected readonly draft = signal('');
@@ -43,6 +45,10 @@ export class CommentComposer {
   protected onInput(event: Event): void {
     this.draft.set((event.target as HTMLTextAreaElement).value);
     this.error.set(null);
+  }
+
+  protected promptLogin(): void {
+    this.loginPrompt.requireLogin('Entre para comentar nesta review.');
   }
 
   protected submit(event: Event): void {

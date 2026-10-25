@@ -3,10 +3,10 @@
     <p class="feed-head__eyebrow">Comunidade</p>
     <div class="feed-head__title-row">
       <h1 id="feed-title">Reviews</h1>
-      <a class="feed-head__new" routerLink="/new">
+      <button type="button" class="feed-head__new" (click)="openNewReview()">
         <app-icon name="plus" [size]="16" />
         Nova review
-      </a>
+      </button>
     </div>
     <p class="feed-head__count" aria-live="polite">{{ countLabel() }}</p>
   </div>

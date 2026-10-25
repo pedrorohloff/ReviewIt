@@ -116,7 +116,7 @@ requirement**.
 | Auth | `AuthAccountServiceTest` | `AuthControllerTest` |
 
 `AppJwtServiceTest`, `JwtFilterTest`, `JwtFilterAuthenticationTest` and `AuthSecurityTest`
-cover token validation and the public auth routes.
+cover token validation, the public auth routes and the public feed read contract.
 
 Shared helpers:
 - `src/test/java/com/pedrorohloff/AbstractIntegrationTest.java` — Testcontainers base class.
@@ -304,10 +304,12 @@ script falls back to 6543 or use `SEED_DB_PORT=6543` explicitly. See
 
 ## 6. API endpoints
 
-All endpoints live under `/api/v1`. `GET /api/v1/health`, Swagger UI and the
-OpenAPI document are public; everything else requires
-`Authorization: Bearer <supabase-jwt>` (`anyRequest().authenticated()`). The JWT
-`sub` claim must be a **UUID** — it becomes the `currentUserId` request attribute.
+All endpoints live under `/api/v1`. Public without a token: `GET /api/v1/health`,
+Swagger UI, the OpenAPI document, `POST /api/v1/auth/register`,
+`POST /api/v1/auth/login`, and the read-only `GET` endpoints for posts, comments
+and profiles (the feed, review detail, comments and public profiles). Everything
+else requires `Authorization: Bearer <token>`. The JWT `sub` claim must be a
+**UUID** — it becomes the `currentUserId` request attribute.
 
 ```
 GET    /api/v1/health

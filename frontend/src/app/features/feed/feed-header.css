@@ -68,6 +68,7 @@
   font-size: 0.8125rem;
   font-weight: 650;
   white-space: nowrap;
+  cursor: pointer;
   transition:
     background-color 120ms ease-out,
     border-color 120ms ease-out;

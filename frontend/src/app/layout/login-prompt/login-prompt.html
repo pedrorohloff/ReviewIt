@@ -1,0 +1,10 @@
+@if (prompt.open()) {
+  <app-confirm-dialog
+    title="Entre para continuar"
+    [message]="prompt.message()"
+    confirmLabel="Entrar"
+    cancelLabel="Agora não"
+    (confirmed)="confirm()"
+    (cancelled)="prompt.dismiss()"
+  />
+}

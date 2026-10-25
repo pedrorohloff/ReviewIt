@@ -8,7 +8,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { LoginPromptService } from '@app/core/auth/login-prompt.service';
 import { SortOption } from '@app/core/models/post';
 import { FilterPopover } from '@app/features/filters/filter-popover';
 import { Icon } from '@app/shared/ui/icon/icon';
@@ -18,12 +19,14 @@ import { FeedStore } from './feed-store';
 @Component({
   selector: 'app-feed-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FilterPopover, Icon, RouterLink],
+  imports: [FilterPopover, Icon],
   templateUrl: './feed-header.html',
   styleUrl: './feed-header.css',
 })
 export class FeedHeader {
   private readonly store = inject(FeedStore);
+  private readonly router = inject(Router);
+  private readonly loginPrompt = inject(LoginPromptService);
   private readonly filterButton = viewChild<ElementRef<HTMLButtonElement>>('filterButton');
 
   protected readonly total = this.store.totalElements;
@@ -35,6 +38,14 @@ export class FeedHeader {
 
   protected setSort(value: SortOption): void {
     this.store.setFilters({ ...this.store.filters(), sort: value });
+  }
+
+  protected openNewReview(): void {
+    if (this.loginPrompt.requireLogin('Entre para criar uma review.', '/new')) {
+      return;
+    }
+
+    void this.router.navigate(['/new']);
   }
 
   protected toggleFilters(): void {

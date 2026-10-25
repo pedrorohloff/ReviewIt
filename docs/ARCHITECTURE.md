@@ -33,7 +33,7 @@ Base package: `com.pedrorohloff`
 - `exception/BusinessException.java`, `ForbiddenException.java`, `RecordNotFoundException.java`
 - `security/JwtFilter.java` — validates either a Supabase JWT via JWKS or an application HS256 JWT, then sets `currentUserId` as a request attribute
 - `security/AppJwtService.java` — issues/validates 24-hour email/password tokens
-- `security/SecurityConfig.java` — Spring Security config; only register/login are public; test profile uses `TestSecurityConfig`
+- `security/SecurityConfig.java` — Spring Security config; register/login, health/docs and public `GET` reads (posts, comments, profiles) are open; everything else is authenticated; test profile uses `TestSecurityConfig`
 
 ## Error Handling (RFC 7807)
 

@@ -60,6 +60,13 @@ The app resolves configuration in two layers:
 - Never put a Supabase `service_role` key or a database password in the
   frontend. The anon/publishable key is public by design.
 
+### Anonymous browsing
+
+The feed, review detail, comments and public profiles are readable without a
+login. The Angular routes for `/`, `/posts/:id` and `/profile/:id` have no
+`authGuard`, and the backend allows the matching `GET` requests. Writes (new or
+edited reviews, likes, comments, reports) still require an authenticated session.
+
 ### Login session
 
 - **Email/password** calls `POST /auth/login` or `POST /auth/register` on the

@@ -27,6 +27,10 @@
         <button type="submit" class="composer__submit" [disabled]="!canSubmit()">
           {{ pending() ? 'Enviando…' : 'Comentar' }}
         </button>
+      } @else {
+        <button type="button" class="composer__submit" (click)="promptLogin()">
+          Entrar para comentar
+        </button>
       }
     </div>
   </div>

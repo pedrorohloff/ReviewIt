@@ -53,10 +53,10 @@
         </a>
       }
 
-      <a class="account__item" role="menuitem" routerLink="/new" (click)="close(false)">
+      <button type="button" class="account__item" role="menuitem" (click)="openNewReview()">
         <app-icon name="plus" [size]="17" />
         Nova review
-      </a>
+      </button>
 
       @if (!isDemo()) {
         <span class="account__separator" role="separator"></span>

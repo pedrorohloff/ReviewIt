@@ -14,6 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '@app/core/auth/auth.service';
+import { LoginPromptService } from '@app/core/auth/login-prompt.service';
 import { Avatar } from '@app/shared/ui/avatar/avatar';
 import { Icon } from '@app/shared/ui/icon/icon';
 
@@ -36,6 +37,7 @@ import { Icon } from '@app/shared/ui/icon/icon';
 export class AvatarMenu {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly loginPrompt = inject(LoginPromptService);
   private readonly injector = inject(Injector);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -93,6 +95,16 @@ export class AvatarMenu {
   protected signOut(): void {
     this.close(false);
     void this.auth.signOut();
+  }
+
+  protected openNewReview(): void {
+    this.close(false);
+
+    if (this.loginPrompt.requireLogin('Entre para criar uma review.', '/new')) {
+      return;
+    }
+
+    void this.router.navigate(['/new']);
   }
 
   protected onMenuKeydown(event: KeyboardEvent): void {
