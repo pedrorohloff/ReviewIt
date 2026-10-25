@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { REVIEW_API, ReviewApi } from '@app/core/api/review-api';
+import { LoginPromptService } from '@app/core/auth/login-prompt.service';
 import { Comment } from '@app/core/models/comment';
 import { LikeResult } from '@app/core/models/like';
 import { Post } from '@app/core/models/post';
@@ -46,9 +47,13 @@ function setup() {
     togglePostLike: vi.fn(() => postAnswer.asObservable()),
     toggleCommentLike: vi.fn(() => commentAnswer.asObservable()),
   };
+  const loginPrompt = { requireLogin: vi.fn().mockReturnValue(false) };
 
   TestBed.configureTestingModule({
-    providers: [{ provide: REVIEW_API, useValue: api as unknown as ReviewApi }],
+    providers: [
+      { provide: REVIEW_API, useValue: api as unknown as ReviewApi },
+      { provide: LoginPromptService, useValue: loginPrompt },
+    ],
   });
 
   return {
@@ -58,6 +63,7 @@ function setup() {
     postAnswer,
     commentAnswer,
     api,
+    loginPrompt,
   };
 }
 
@@ -109,5 +115,38 @@ describe('LikeService', () => {
 
     expect(states.at(-1)).toEqual({ likedByMe: false, likeCount: 3 });
     expect(toaster.toasts().at(-1)).toMatchObject({ kind: 'error' });
+  });
+});
+
+describe('LikeService login gate', () => {
+  it('opens the login prompt instead of liking a post', () => {
+    const { service, cache, api, loginPrompt } = setup();
+    const post = makePost();
+    loginPrompt.requireLogin.mockReturnValue(true);
+
+    service.togglePost(post);
+
+    expect(loginPrompt.requireLogin).toHaveBeenCalledWith({
+      title: 'Entre para curtir',
+      message: 'Curtir reviews e comentários exige uma conta.',
+    });
+    expect(api.togglePostLike).not.toHaveBeenCalled();
+    expect(cache.merge(post)).toMatchObject({ likedByMe: false, likeCount: 10 });
+  });
+
+  it('opens the login prompt instead of liking a comment', () => {
+    const { service, api, loginPrompt } = setup();
+    const comment = makeComment();
+    const states: { likedByMe: boolean; likeCount: number }[] = [];
+    loginPrompt.requireLogin.mockReturnValue(true);
+
+    service.toggleComment(comment, (patch) => states.push(patch));
+
+    expect(loginPrompt.requireLogin).toHaveBeenCalledWith({
+      title: 'Entre para curtir',
+      message: 'Curtir reviews e comentários exige uma conta.',
+    });
+    expect(api.toggleCommentLike).not.toHaveBeenCalled();
+    expect(states).toEqual([]);
   });
 });

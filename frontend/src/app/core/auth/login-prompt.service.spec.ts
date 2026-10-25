@@ -35,11 +35,15 @@ describe('LoginPromptService', () => {
       isAuthenticated: signal(false),
     });
 
-    const opened = prompt.requireLogin('Entre para comentar.');
+    const opened = prompt.requireLogin({
+      title: 'Entre para comentar',
+      message: 'Participe da conversa com uma conta.',
+    });
 
     expect(opened).toBe(true);
     expect(prompt.open()).toBe(true);
-    expect(prompt.message()).toBe('Entre para comentar.');
+    expect(prompt.title()).toBe('Entre para comentar');
+    expect(prompt.message()).toBe('Participe da conversa com uma conta.');
   });
 
   it('does not open for an authenticated user', () => {
@@ -48,7 +52,10 @@ describe('LoginPromptService', () => {
       isAuthenticated: signal(true),
     });
 
-    const opened = prompt.requireLogin('Entre para comentar.');
+    const opened = prompt.requireLogin({
+      title: 'Entre para comentar',
+      message: 'Participe da conversa com uma conta.',
+    });
 
     expect(opened).toBe(false);
     expect(prompt.open()).toBe(false);
@@ -60,7 +67,12 @@ describe('LoginPromptService', () => {
       isAuthenticated: signal(true),
     });
 
-    expect(prompt.requireLogin('Entre para comentar.')).toBe(false);
+    expect(
+      prompt.requireLogin({
+        title: 'Entre para comentar',
+        message: 'Participe da conversa com uma conta.',
+      }),
+    ).toBe(false);
     expect(prompt.open()).toBe(false);
   });
 
@@ -70,7 +82,10 @@ describe('LoginPromptService', () => {
       isAuthenticated: signal(false),
     });
 
-    prompt.requireLogin('Entre para comentar.');
+    prompt.requireLogin({
+      title: 'Entre para comentar',
+      message: 'Participe da conversa com uma conta.',
+    });
     prompt.dismiss();
 
     expect(prompt.open()).toBe(false);
@@ -83,7 +98,11 @@ describe('LoginPromptService', () => {
       isAuthenticated: signal(false),
     });
 
-    prompt.requireLogin('Entre para criar uma review.', '/new');
+    prompt.requireLogin({
+      title: 'Entre para criar review',
+      message: 'Publique sua própria review com uma conta.',
+      next: '/new',
+    });
     await prompt.confirm();
 
     expect(prompt.open()).toBe(false);

@@ -48,7 +48,10 @@ export class CommentComposer {
   }
 
   protected promptLogin(): void {
-    this.loginPrompt.requireLogin('Entre para comentar nesta review.');
+    this.loginPrompt.requireLogin({
+      title: 'Entre para comentar',
+      message: 'Participe da conversa com uma conta.',
+    });
   }
 
   protected submit(event: Event): void {

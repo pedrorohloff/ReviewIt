@@ -56,7 +56,10 @@ describe('CommentComposer', () => {
 
     actionButton(fixture).click();
 
-    expect(prompt.requireLogin).toHaveBeenCalledWith('Entre para comentar nesta review.');
+    expect(prompt.requireLogin).toHaveBeenCalledWith({
+      title: 'Entre para comentar',
+      message: 'Participe da conversa com uma conta.',
+    });
   });
 
   it('shows the submit action for signed-in users', () => {

@@ -65,7 +65,9 @@ The app resolves configuration in two layers:
 The feed, review detail, comments and public profiles are readable without a
 login. The Angular routes for `/`, `/posts/:id` and `/profile/:id` have no
 `authGuard`, and the backend allows the matching `GET` requests. Writes (new or
-edited reviews, likes, comments, reports) still require an authenticated session.
+edited reviews, likes, comments, reports) still require an authenticated session;
+the UI opens a login prompt for new reviews, likes and comments, and confirming
+it goes to `/login?next=<attempted-url>`.
 
 ### Login session
 

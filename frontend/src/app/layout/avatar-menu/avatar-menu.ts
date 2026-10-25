@@ -100,7 +100,13 @@ export class AvatarMenu {
   protected openNewReview(): void {
     this.close(false);
 
-    if (this.loginPrompt.requireLogin('Entre para criar uma review.', '/new')) {
+    if (
+      this.loginPrompt.requireLogin({
+        title: 'Entre para criar review',
+        message: 'Publique sua própria review com uma conta.',
+        next: '/new',
+      })
+    ) {
       return;
     }
 

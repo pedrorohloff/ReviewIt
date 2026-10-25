@@ -48,10 +48,11 @@ describe('FeedHeader', () => {
 
     newReviewButton(fixture).click();
 
-    expect(prompt.requireLogin).toHaveBeenCalledWith(
-      'Entre para criar uma review.',
-      '/new',
-    );
+    expect(prompt.requireLogin).toHaveBeenCalledWith({
+      title: 'Entre para criar review',
+      message: 'Publique sua própria review com uma conta.',
+      next: '/new',
+    });
     expect(router.navigate).not.toHaveBeenCalled();
   });
 

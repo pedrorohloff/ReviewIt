@@ -1,6 +1,6 @@
 @if (prompt.open()) {
   <app-confirm-dialog
-    title="Entre para continuar"
+    [title]="prompt.title()"
     [message]="prompt.message()"
     confirmLabel="Entrar"
     cancelLabel="Agora não"

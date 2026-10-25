@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { REVIEW_API } from '@app/core/api/review-api';
+import { LoginPromptService } from '@app/core/auth/login-prompt.service';
 import { Comment } from '@app/core/models/comment';
 import { LikeResult } from '@app/core/models/like';
 import { Post } from '@app/core/models/post';
@@ -36,8 +37,13 @@ export class LikeService {
   private readonly api = inject(REVIEW_API);
   private readonly cache = inject(PostCacheService);
   private readonly toaster = inject(ToasterService);
+  private readonly loginPrompt = inject(LoginPromptService);
 
   togglePost(post: Post): void {
+    if (this.requireLogin()) {
+      return;
+    }
+
     const previous: LikeState = { likedByMe: !!post.likedByMe, likeCount: post.likeCount };
 
     this.cache.patch(post.id, nextLikeState(previous));
@@ -52,6 +58,10 @@ export class LikeService {
   }
 
   toggleComment(comment: Comment, apply: (patch: LikeState) => void): void {
+    if (this.requireLogin()) {
+      return;
+    }
+
     const previous: LikeState = { likedByMe: !!comment.likedByMe, likeCount: comment.likeCount };
 
     apply(nextLikeState(previous));
@@ -62,6 +72,13 @@ export class LikeService {
         apply(previous);
         this.toaster.error(ERROR_MESSAGE);
       },
+    });
+  }
+
+  private requireLogin(): boolean {
+    return this.loginPrompt.requireLogin({
+      title: 'Entre para curtir',
+      message: 'Curtir reviews e comentários exige uma conta.',
     });
   }
 }
