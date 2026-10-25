@@ -2,11 +2,18 @@
   position: fixed;
   top: 0;
   right: 0;
-  bottom: 0;
   z-index: 60;
   display: block;
-  width: 0.625rem;
+  width: 0.75rem;
+  height: 0;
+  opacity: 0;
   pointer-events: none;
+  user-select: none;
+  transition: opacity 120ms ease-out;
+}
+
+:host(.is-ready) {
+  opacity: 1;
 }
 
 .rail__track {
@@ -14,22 +21,32 @@
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 0.375rem;
-  border-radius: 0.1875rem;
+  width: 0.5rem;
+  border-radius: 0.25rem;
   background: var(--rail-track);
   transform: translateX(-50%);
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .rail__thumb {
   position: absolute;
   top: 0;
   left: 50%;
-  width: 0.375rem;
-  border-radius: 0.1875rem;
+  width: 0.5rem;
+  border-radius: 0.25rem;
   background: var(--color-muted);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
   transition:
     height 70ms linear,
     transform 70ms linear;
+}
+
+:host(.is-dragging) .rail__thumb {
+  cursor: grabbing;
+  transition: none;
 }
 
 @media (max-width: 1023px) {

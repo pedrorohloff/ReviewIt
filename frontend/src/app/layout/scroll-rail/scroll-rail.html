@@ -1,6 +1,10 @@
-<span class="rail__track"></span>
+<span class="rail__track" (pointerdown)="onTrackPointerDown($event)"></span>
 <span
   class="rail__thumb"
   [style.height.px]="thumbHeight()"
   [style.transform]="'translate(-50%, ' + thumbTop() + 'px)'"
+  (pointerdown)="onThumbPointerDown($event)"
+  (pointermove)="onThumbPointerMove($event)"
+  (pointerup)="onThumbPointerUp($event)"
+  (pointercancel)="onThumbPointerUp($event)"
 ></span>
